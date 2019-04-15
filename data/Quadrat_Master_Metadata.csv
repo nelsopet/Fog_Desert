@@ -1,0 +1,17 @@
+###Metadata for "Quadrat_Master.csv"
+######Last changed: July 7th 2015
+###Column descriptions and units for the summary/descriptive data for each quadrat:
+Elevation: Elevation above sea level (in m)
+Quadrat: Quadrat number (1 through 20)
+Transect: Altitudinal transect (A for March-April 2015)
+Inclination: Slope of quadrat (° from horizontal)
+Aspect: Cardinal aspect of slope (° from magnetic North)
+R_Sum: Total area cover of rocks (cm2). Maximum possible is 900cm2. Only rocks > over 0.5cm2 are included.
+R_Mean: Mean rock size within quadrat (cm2). Only rocks > over 0.5cm2 are included.
+R_Median: Median rock size within quadrat (cm2). Only rocks > over 0.5cm2 are included.
+R_Max: Area of the largest rock within the quadrat (cm2). Only rocks > over 0.5cm2 are included.
+N_Spp: Number of morphospecies in quadrat
+Rou_SD: Standard deviation of surface roughness measurements (mm)
+##The last two columns refer to the thalli measured for heigh above substrate:
+Species: Morphospecies name of the species measured
+Height: Height above substrate (mm)
