@@ -1,17 +1,37 @@
 ####################
+#removed setting working directory so paths can be relative for each file read in. Not sure this is the best
+#way to do it but allows a user to pull the repo and not have to change working directory
+#setwd("~Data/Patache_Commnunity/Patache")
 
-setwd("~/Dropbox/Lomas/Nat Geo/Data 2016")
-library(labdsv)
-library(lattice)
-library(polynom)
+#Function taken from https://nhsrcommunity.com/blog/a-simple-function-to-install-and-load-packages-in-r/
+install_or_load_pack <- function(pack){
+  
+  create.pkg <- pack[!(pack %in% installed.packages()[, "Package"])]
+  
+  if (length(create.pkg))
+    
+    install.packages(create.pkg, dependencies = TRUE)
+  
+  sapply(pack, require, character.only = TRUE)
+  
+  #I know I should be using purr here, but this is before the Tidyverse is loaded. I know you Tidyverse trend setters will have me here.
+  
+}
+
+#library(labdsv)
+#library(lattice)
+#library(polynom)
+
+packs<-c("labdsv","lattice","polynom")
+install_or_load_pack(packs)
 
 ######1 read in data files, first looks, combine them into master dataset:
-rou<-read.csv('Roughnesses.csv') ##Roughness, still needs to be compiled and analysed
+rou<-read.csv('data/Roughnesses.csv') ##Roughness, still needs to be compiled and analysed
 summary(rou)
 rouVar<-aggregate(rou[,7],by=list(Elevation=rou$Elevation,Quadrat=rou$Quadrat,Transect=rou$Transect),sd)
 names(rouVar)<-c('Elevation','Quadrat','Transect','Rou_SD')
 
-cov<-read.csv('CoverMaster.csv') ##Cover data from each quadrat, to be converted into multivariates, but also richness, etc 
+cov<-read.csv('data/CoverMaster.csv') ##Cover data from each quadrat, to be converted into multivariates, but also richness, etc 
 summary(cov)
 cov_summ<-aggregate(cov[,c(1)],cov[,c(1,2,3)],FUN=length)#Number of species for each quadrat
 names(cov_summ)<-c('Elevation','Transect','Quadrat','NSpp')
@@ -113,7 +133,7 @@ plot(Inclination~jitter(Elevation,0.5),data=des[des$Transect=='A',],ylab='Slope 
 points(Inclination~jitter(Elevation,0.5),data=des[des$Transect=='B',],col=2,pch=16)
 text(520,5,'Black-Gradient A, Red-Gradient B',cex=1.7,font=2)
 
-he<-read.csv('Heights.csv') ##Thallus heights
+he<-read.csv('data/Heights.csv') ##Thallus heights
 summary(he)
 boxplot(Height~Elevation,data=he,notch=T)
 xyplot(Height~Elevation|Species,data=he,horiz=F)
@@ -168,8 +188,8 @@ summary(lm(Height~Elevation*Species,data=he_red))
 
 
 
-rock<-read.csv('Rockcover.csv') ##Rock cover data, source of the summary stats below
-rock_st<-read.csv('Rock_Cover_stats.csv') ##Rock cover descriptive statistics. 
+rock<-read.csv('data/Rockcover.csv') ##Rock cover data, source of the summary stats below
+rock_st<-read.csv('data/Rock_Cover_stats.csv') ##Rock cover descriptive statistics. 
 summary(rock_st)
 
 quad<-merge(des,rock_st[,c(2,3,5,6,7,8)],all=T)
@@ -177,10 +197,10 @@ quad<-merge(quad,cov_summ,all=T)
 quad<-merge(quad,rouVar)
 quad<-merge(quad,he,all=T)
 summary(quad)
-#write.csv(quad,'Quadrat_Master.csv')
+#write.csv(quad,'data/Quadrat_Master.csv')
 #################################
 ###########################Part 2: explore the explanatory power of the quadrat attributes
-#quad<-read.csv('Quadrat_Master.csv')
+#quad<-read.csv('data/Quadrat_Master.csv')
 
 par(mfrow=c(2,2))
 plot(R_Sum~Elevation,data=quad)
@@ -193,7 +213,7 @@ summary(lm(NSpp~Elevation*R_Median*Rou_SD,data=quad))
 
 
 ####################Combine with microclimate data#####
-ibutt<-read.csv('iButton_combined.csv')
+ibutt<-read.csv('data/iButton_combined.csv')
 ########Need to figure out ways to handle different sampling frequencies across the period covered.
 #The simplest is probably to aggregate by the hour values, although this has the effect of truncating rather than rounding in some cases:
 ibutt<-aggregate(ibutt[,c(4,5,6,7)],by=list(Site=ibutt$Site,Hour=ibutt$Hour,Day=ibutt$Day,Month=ibutt$Month),mean)

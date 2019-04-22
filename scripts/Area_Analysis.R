@@ -1,5 +1,7 @@
-setwd("~/Dropbox/Lomas/Nat Geo")
-areas<-read.csv('Images_Wet_Dry.csv')
+#removed setting working directory so paths can be relative for each file read in. Not sure this is the best
+#way to do it but allows a user to pull the repo and not have to change working directory
+#setwd("~/Dropbox/Lomas/Nat Geo")
+areas<-read.csv('data/Images_Wet_Dry.csv')
 summary(areas)
 #The values for area are not in units of cm for some reason. 
 areas$Area_D<-areas$Area_D/10

@@ -1,3 +1,7 @@
+
+require(tidyverse)
+require(vegan)
+
 coverB<-subset(cover, Transect=='B')
 coverB$Cover<-as.character(coverB$Cover)
 coverB$Cover[coverB$Cover=="T"]<-0.25

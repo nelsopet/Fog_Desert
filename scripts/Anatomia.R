@@ -1,7 +1,8 @@
 library(lattice)
-
-setwd("~/Dropbox/Lomas/Nat Geo")
-anat<-read.csv('Anatomia.csv')#Datos de anatomía de Camilo
+#removed setting working directory so paths can be relative for each file read in. Not sure this is the best
+#way to do it but allows a user to pull the repo and not have to change working directory
+#setwd("~/Dropbox/Lomas/Nat Geo")
+anat<-read.csv('data/Anatomia.csv')#Datos de anatomía de Camilo
 summary(anat)
 
 xyplot(Corteza~Altura|specie,data=anat)

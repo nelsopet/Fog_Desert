@@ -1,12 +1,15 @@
 ####Overal code for Patache community data, combining various data forms into master files for environment, widely measured traits and community composition###
-setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
+#removed setting working directory so paths can be relative for each file read in. Not sure this is the best
+#way to do it but allows a user to pull the repo and not have to change working directory
+#setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
 
 ##Load libraries
 library(smatr,lattice,nlme,labdsv,vegan)
 #########Emphasis on Transect B########
 
 ##########Taxa####
-taxa<-read.csv('Taxa_TransectB.csv')
+#PRN: Where is Taxa_TransectB.csv?
+taxa<-read.csv('data/Taxa_TransectB.csv')
 taxa$Transect<-'B'
 taxa$Elevation<-NA #this creates an empty column of data for storing the elevation records from the collection name
 taxa$Quadrat<-NA
@@ -23,13 +26,13 @@ summary(taxa)
 
 ##############################
 #################Cover Master#############
-cover<-read.csv('CoverMaster.csv')
+cover<-read.csv('data/CoverMaster.csv')
 summary(cover)
 coverB<-cover[cover$Transect=='B',] #just transect B (richer trait data)
 
 
 #############Contact Angle Data############
-angles<-read.csv('ContactAngles_TransectB.csv')
+angles<-read.csv('data/ContactAngles_TransectB.csv')
 angles$Transect<-'B'
 summary(angles)
 summary(lme(Angle~Elevation,~1|Number/Replicate/Subreplicate,data=angles,na.action=na.omit))
@@ -64,7 +67,7 @@ sunflowerplot(Time_Absorption~Elevation,data=cov_ang[!cov_ang$Cover=='T',])
 ##################
 
 ########Quadrat Summary Info ###### roughness, aspect, etc
-quad<-read.csv('Quadrat_Master.csv')
+quad<-read.csv('data/Quadrat_Master.csv')
 
 quad_cov<-merge(quad,cov_ang,all=T)
 
@@ -181,6 +184,6 @@ summary(lm(VPD~Site*Transect,data=mins[mins$Year==2016,]))
 
 
 #####Anatomy#####
-anat<-read.csv('Anatomia2.csv')
+anat<-read.csv('data/Anatomia2.csv')
 
 

@@ -1,8 +1,9 @@
 ###Process the drying curves from Patache lichens
 library(lattice)
-
-setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
-dry<-read.csv('Drying_Patache_1.csv',na.string='na')
+#removed setting working directory so paths can be relative for each file read in. Not sure this is the best
+#way to do it but allows a user to pull the repo and not have to change working directory
+#setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
+dry<-read.csv('data/Drying_Patache_1.csv',na.string='na')
 summary(dry)
 dry$RWC<-(dry$Mass-dry$DryMass)/(dry$DryMass-dry$EmptyMass)
 dry$DryNet<-dry$DryMass-dry$EmptyMass
@@ -25,8 +26,11 @@ plot(slope~Species,data=rates[!rates$Species=='Blank',])
 xyplot(slope~Elevation|Species,data=rates[!rates$Species=='Blank',])
 
 ##Bring in additional drying rates for Rocc and Het
-setwd("~/Dropbox/Lomas/Nat Geo/Data 2016/Drying")
-dry<-read.csv("RoccHetB_Try1.csv")
+#removed setting working directory so paths can be relative for each file read in. Not sure this is the best
+#way to do it but allows a user to pull the repo and not have to change working directory
+#setwd("~/Dropbox/Lomas/Nat Geo/Data 2016/Drying")
+#PRN: Where is RoccHetB_Try1.csv?
+dry<-read.csv('data/RoccHetB_Try1.csv')
 summary(dry)
 dry$AdjMass<-(dry$Mass-dry$Paper)/dry$DryMass
 dry$RWC<-(dry$Mass-dry$DryMass)/(dry$DryMass)
@@ -57,8 +61,10 @@ summary(lm(slope~Species*Elevation,data=dry_rates[!dry_rates$Species=='Control'&
 rate_Rocc<-dry_rates[dry_rates$Species=='Roccellina',]
 
 #Another set of Roccellina curves
-setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
-dry<-read.csv('Rocc_Dry_Nov18.csv',na.string='na')
+#removed setting working directory so paths can be relative for each file read in. Not sure this is the best
+#way to do it but allows a user to pull the repo and not have to change working directory
+#setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
+dry<-read.csv('data/Rocc_Dry_Nov18.csv',na.string='na')
 
 summary(dry)
 
