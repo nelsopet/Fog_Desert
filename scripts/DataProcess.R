@@ -44,7 +44,7 @@ div<-unique(cov[,c(1,4)])
 plot(summary(as.factor(div[,1])),pch=16,cex=2.5,ylab='# of Morphospecies',ylim=c(0,40))
 
 spp<-unique(cov$Species)
-spinf<-read.csv('Spp.csv')
+spinf<-read.csv('data/Spp.csv')
 covs<-merge(cov,spinf,all=T)
 covs_summ<-aggregate(covs[,c(1)],covs[,c(1,2,3,13)],FUN=length)#Number of species for each quadrat
 plot(x~Elevation,data=covs_summ[covs_summ$Form=='Crustose',],xlim=c(300,850))
@@ -122,7 +122,7 @@ boxplot(x~Elevation,data=form_div,pch=16,ylab='# of Growth Forms/Quadrat',ylim=c
 
 
 ?par(mgp=c(5,1,0),mar=c(8,8,1,1),las=1)
-des<-read.csv('Desc.csv') ##Site descriptive data (Inclination and Aspect)
+des<-read.csv('data/Desc.csv') ##Site descriptive data (Inclination and Aspect)
 summary(des)
 summary(lm(Inclination~as.factor(Elevation),data=des))
 summary(lm(Aspect~as.factor(Elevation),data=des))
@@ -139,8 +139,10 @@ boxplot(Height~Elevation,data=he,notch=T)
 xyplot(Height~Elevation|Species,data=he,horiz=F)
 summary(lm(Height~Elevation*Species,data=he))
 summary(lm(Height~Elevation+I(Elevation^2),data=he[he$Species=='Heterodermia1'&he$Elevation<800,]))
+## The plot below throws errors 
 plot(Height~Elevation,data=he[he$Species=='Heterodermia1',],notch=T)
 
+###PRN left off review here
 plot(Height~jitter(Elevation,0.5),data=he[he$Species=='Follm',],xlim=c(250,850),pch=16,cex=2,ylim=c(0,4.25),yaxs='i',xlab='Elevation (m)',ylab='Height (cm)')
 summary(lm(Height~Elevation,data=he[he$Species=='Follm',]))
 abline(a=-0.0688149,b=0.0009978,lty=2)

@@ -18,3 +18,10 @@ coverB_flat_forMDS<-rename(coverB_flat_forMDS, tot_cov =`rowSums(coverB_flat_for
 coverB_flat_forMDS<-coverB_flat_forMDS %>% subset(tot_cov>0)
 
 plot(metaMDS(coverB_flat_forMDS, distance = "bray"))
+
+######### Second matrix ... Daniel recommeded starting looking at microclimate, specifically
+######### sat85_dry, Tmed, VPDmed ... where are these columns?
+##Find files with data from same quadrats/elevations on transect B
+## anat, he, he_red, quad, rou, rouVar all are filterable by transect
+## angles, dry only has data for transect B
+## unclear which transect rock and rock_st came from
