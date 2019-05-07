@@ -2,6 +2,11 @@
 #removed setting working directory so paths can be relative for each file read in. Not sure this is the best
 #way to do it but allows a user to pull the repo and not have to change working directory
 #setwd("~Data/Patache_Commnunity/Patache")
+#D. Stanton said the following re: location of second  matrix variables
+#i think the master analysis R script should calculate them, at the elevation level (we have to then assume they 
+#are the same across the elevational isocline). For quadrat-specific metrics we have aspect, inclination and 
+#RoughnessSD (standard deviation of values from the roughness measurement, to get microtopographic diversity)
+
 
 #Function taken from https://nhsrcommunity.com/blog/a-simple-function-to-install-and-load-packages-in-r/
 install_or_load_pack <- function(pack){

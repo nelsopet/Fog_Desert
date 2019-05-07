@@ -3,12 +3,29 @@
 #way to do it but allows a user to pull the repo and not have to change working directory
 #setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
 
+#Function taken from https://nhsrcommunity.com/blog/a-simple-function-to-install-and-load-packages-in-r/
+install_or_load_pack <- function(pack){
+  
+  create.pkg <- pack[!(pack %in% installed.packages()[, "Package"])]
+  
+  if (length(create.pkg))
+    
+    install.packages(create.pkg, dependencies = TRUE)
+  
+  sapply(pack, require, character.only = TRUE)
+  
+  #I know I should be using purr here, but this is before the Tidyverse is loaded. I know you Tidyverse trend setters will have me here.
+  
+}
+
 ##Load libraries
-library(smatr,lattice,nlme,labdsv,vegan)
+install_or_load_pack(c("smatr","lattice","nlme","labdsv","vegan"))
 #########Emphasis on Transect B########
 
 ##########Taxa####
-#PRN: Where is Taxa_TransectB.csv?
+#PRN: Where is Taxa_TransectB.csv? Since it isn't in the data folder, it breaks other parts of the code
+#downstream of here, like cov_ang. Can you locate that file or add code that generates it, write it to the data
+#folder before you push your updates?
 taxa<-read.csv('data/Taxa_TransectB.csv')
 taxa$Transect<-'B'
 taxa$Elevation<-NA #this creates an empty column of data for storing the elevation records from the collection name
@@ -67,16 +84,19 @@ sunflowerplot(Time_Absorption~Elevation,data=cov_ang[!cov_ang$Cover=='T',])
 ##################
 
 ########Quadrat Summary Info ###### roughness, aspect, etc
+##PRN: Once you find the TransectB.csv file, that will enable the generation of quad_cov. Once that is done,
+#I'm guessing I need to subset quad_cov to only include transect B so I can use it in the community analysis.
 quad<-read.csv('data/Quadrat_Master.csv')
 
 quad_cov<-merge(quad,cov_ang,all=T)
 
 #################
 #########################Species perspective######################
+
 spp_summ<-aggregate(coverB[,c(1)],coverB[,c(1,2,4,6)],length) #number of quadrats for each species/elevation
 names(spp_summ)[5]<-'N_Quad_Pres'
 
-
+##PRN: This breaks because ang_tax isn't generated since it's precursors are there.
 sp_persp<-merge(ang_tax,spp_summ)
 sp_persp<-merge(sp_persp,sp_trait)
 
@@ -86,8 +106,8 @@ points(Time_Absorption~jitter(as.numeric(Elevation)),data=sp_persp[sp_persp$Form
 
 xyplot(Time_Absorption~as.numeric(Elevation)|Form,data=sp_persp)
 
-library(lattice)#########Microclimate Data##########
-ibutt<-read.csv('iButton_combined.csv')
+#########Microclimate Data##########
+ibutt<-read.csv('data/iButton_combined.csv')
 #clim<-read.csv('Microclim_Summary.csv')
 ibutt<-aggregate(ibutt[,c(4,5,6,7)],by=list(Site=ibutt$Site,Transect=ibutt$Transect,Hour=ibutt$Hour,Day=ibutt$Day,Month=ibutt$Month,Year=ibutt$Year),mean,na.rm=T)
 hourly_medians<-aggregate(ibutt[,c(4,5,6,7)],by=list(Site=ibutt$Site,Hour=ibutt$Hour,Transect=ibutt$Transect),median,na.rm=T)
@@ -161,6 +181,7 @@ mins<-aggregate(ibutt[,c(7,8,10)],by=list(Site=ibutt[,]$Site,Day=ibutt[,]$Day,Tr
 maxs<-aggregate(ibutt[,c(7,8,10)],by=list(Site=ibutt[,]$Site,Day=ibutt[,]$Day,Transect=ibutt[,]$Transect,Year=ibutt[,]$Year),max)
 meds<-aggregate(ibutt[,c(7,8,10)],by=list(Site=ibutt[,]$Site,Day=ibutt[,]$Day,Transect=ibutt[,]$Transect,Year=ibutt[,]$Year),median)
 
+#PRN: Some of these boxplots fail due to settings. Not sure if it important to chase at this point.
 boxplot(T~Site,data=mins[mins$Transect=='A'&mins$Year==2016,],ylim=c(5,50),ylab='Min/Max Surface Temperature (°C)',xlab='Elevation (m.a.s.l.',notch=T,main='Transect A')
 boxplot(T~Site,data=maxs[maxs$Transect=='A'&maxs$Year==2016,],add=T,notch=T)
 boxplot(T~Site,data=mins[mins$Transect=='B',],ylim=c(5,50),ylab='Min/Max Surface Temperature (°C)',xlab='Elevation (m.a.s.l.',notch=T,main='Transect B')
