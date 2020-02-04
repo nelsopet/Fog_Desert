@@ -2,7 +2,7 @@
 #removed setting working directory so paths can be relative for each file read in. Not sure this is the best
 #way to do it but allows a user to pull the repo and not have to change working directory
 #setwd("~/Dropbox/Lomas/Nat Geo/Combined Data")
-
+test
 #Function taken from https://nhsrcommunity.com/blog/a-simple-function-to-install-and-load-packages-in-r/
 install_or_load_pack <- function(pack){
   
