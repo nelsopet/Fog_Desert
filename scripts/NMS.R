@@ -1,7 +1,9 @@
-
+install.packages('devtools')
+devtools::install_github('phytomosaic/foggy')
+devtools::install_github('phytomosaic/ecole')
 require(tidyverse)
 require(vegan)
-
+require(R-metrics)
 
 ## Two objects need to be read in
 cover<-read.csv('data/CoverMaster.csv')
@@ -22,8 +24,10 @@ cover<-read.csv('data/CoverMaster.csv')
 Env_matrix_B<-read.csv('data/Env_matrix_B.csv')
 
 ## Read in trait data
-trait<-read.csv('data/QuadratMeanTraits_Weighted_NoTrace.csv')
+#trait<-read.csv('data/QuadratMeanTraits_Weighted_NoTrace.csv')
+trait<-read.csv('data/QuadratMeanTraits_Unweighted.csv')
 trait$UID<-paste(trait$Elevation, trait$Quadrat, sep="_")
+View(trait)
 trait<-trait[,-1:-4]
   #'data.frame':	49 obs. of  11 variables:
   #  $ X              : int  1 2 3 4 5 6 7 8 9 10 ...
@@ -114,19 +118,19 @@ anti_join(cover, trait, by="Species") %>% select(Species) %>% unique() %>% nrow(
 
 ## Build a regular NMDS using only transect B, which has the complete community and environmental data
   coverB<-subset(cover, Transect=='B')
-  coverB$Cover<-as.character(coverB$Cover)
-  coverB$Cover[coverB$Cover=="T"]<-0.25
+    coverB$Cover<-as.character(coverB$Cover)
+      coverB$Cover[coverB$Cover=="T"]<-0.25
   coverB_flat<-coverB %>% select(-Collection, -Long_Form, -Photos) %>% spread(Species, Cover)
   coverB_flat_forMDS<-select(coverB_flat, -Elevation, -Transect, -Quadrat,-V1)
-  coverB_flat_forMDS<-sapply(coverB_flat_forMDS, as.numeric) %>% as.data.frame()
-  coverB_flat_forMDS[is.na(coverB_flat_forMDS)]<-0
-  coverB_flat_forMDS<-cbind(coverB_flat_forMDS,as.data.frame(rowSums(coverB_flat_forMDS)))
-  coverB_flat_forMDS<-as.data.frame(coverB_flat_forMDS) 
-  coverB_flat_forMDS<-rename(coverB_flat_forMDS, tot_cov =`rowSums(coverB_flat_forMDS)`)
-  coverB_flat_forMDS<-coverB_flat_forMDS %>% subset(tot_cov>0) %>% select(-tot_cov)
+    coverB_flat_forMDS<-sapply(coverB_flat_forMDS, as.numeric) %>% as.data.frame()
+      coverB_flat_forMDS[is.na(coverB_flat_forMDS)]<-0
+        coverB_flat_forMDS<-cbind(coverB_flat_forMDS,as.data.frame(rowSums(coverB_flat_forMDS)))
+          coverB_flat_forMDS<-as.data.frame(coverB_flat_forMDS) 
+            coverB_flat_forMDS<-rename(coverB_flat_forMDS, tot_cov =`rowSums(coverB_flat_forMDS)`)
+              coverB_flat_forMDS<-coverB_flat_forMDS %>% subset(tot_cov>0) %>% select(-tot_cov)
   coverB_MDS<-metaMDS(coverB_flat_forMDS, distance = "bray", try=100, trymax = 500)
-  plot(coverB_MDS)  
-  dev.off()
+    plot(coverB_MDS)  
+      dev.off()
 ## The NMDS above includes all quadrats, including those which had no lichens.
 ## Those empty plots need to be removed by calculating and filtering by total cover > 0
   coverB_filt<-subset(cover, Transect=='B') ## 'data.frame':	342 obs. of  8 variables:, 7 factors and 1 integer
@@ -137,27 +141,27 @@ anti_join(cover, trait, by="Species") %>% select(Species) %>% unique() %>% nrow(
   coverB_filt <- coverB_filt %>% select(-Collection, -Long_Form, -Photos) #'data.frame':	342 obs. of  5 variables:, 1 integer, 3 factors and 1 char
     ##Spread data so columns are species, values are cover and rows are single quadrats
     coverB_filt_flat<-coverB_filt %>% spread(Species, Cover) %>% select(-V1) # 'data.frame':	60 obs. of  92 variables: 1 integer, two factors, 89 chars
-    ## Replace NAs with 0's and turn it into a dataframe
-    coverB_filt_flat[is.na(coverB_filt_flat)==T]<-0
-    ## Make the species cover columns numeric but this makes everything numeric so no need for the row subscript
-    coverB_filt_flat$Quadrat<-as.character(coverB_filt_flat$Quadrat)
-    coverB_filt_flat<-mapply(as.numeric, coverB_filt_flat) %>% as.data.frame()
-    coverB_filt_flat[is.na(coverB_filt_flat)==T]<-0 # 'data.frame':	60 obs. of  92 variables:, all vars numeric
-    ## Create rownames that are UIDs
-    coverB_filt_flat$UID<-paste(coverB_filt_flat$Elevation, coverB_filt_flat$Quadrat, sep="_")
-    rownames(coverB_filt_flat)<-coverB_filt_flat$UID
-    coverB_filt_flat<-coverB_filt_flat %>% select(-UID)
+      ## Replace NAs with 0's and turn it into a dataframe
+      coverB_filt_flat[is.na(coverB_filt_flat)==T]<-0
+        ## Make the species cover columns numeric but this makes everything numeric so no need for the row subscript
+        coverB_filt_flat$Quadrat<-as.character(coverB_filt_flat$Quadrat)
+          coverB_filt_flat<-mapply(as.numeric, coverB_filt_flat) %>% as.data.frame()
+            coverB_filt_flat[is.na(coverB_filt_flat)==T]<-0 # 'data.frame':	60 obs. of  92 variables:, all vars numeric
+              ## Create rownames that are UIDs
+              coverB_filt_flat$UID<-paste(coverB_filt_flat$Elevation, coverB_filt_flat$Quadrat, sep="_")
+                rownames(coverB_filt_flat)<-coverB_filt_flat$UID
+                  coverB_filt_flat<-coverB_filt_flat %>% select(-UID)
       ## Remove columns that aren't species to conform to input requirements for metaMDS
       coverB_filt_flat_forMDS<-select(coverB_filt_flat, -Elevation, -Transect, -Quadrat)
-      coverB_filt_flat_forMDS[is.na(coverB_filt_flat_forMDS)==T]<-0
+        coverB_filt_flat_forMDS[is.na(coverB_filt_flat_forMDS)==T]<-0
       
-      coverB_filt_flat_forMDS$rowsums<-coverB_filt_flat_forMDS[,4:nrow(coverB_filt_flat_forMDS)] %>% rowSums()
-      coverB_filt_flat_forMDS<-cbind(coverB_filt_flat_forMDS,as.data.frame(rowSums(coverB_filt_flat_forMDS)))
-      coverB_filt_flat_forMDS[is.na(coverB_filt_flat_forMDS)==T]<-0
+          coverB_filt_flat_forMDS$rowsums<-coverB_filt_flat_forMDS[,4:nrow(coverB_filt_flat_forMDS)] %>% rowSums()
+            coverB_filt_flat_forMDS<-cbind(coverB_filt_flat_forMDS,as.data.frame(rowSums(coverB_filt_flat_forMDS)))
+              coverB_filt_flat_forMDS[is.na(coverB_filt_flat_forMDS)==T]<-0
       
-      coverB_filt_flat_forMDS<-as.data.frame(coverB_filt_flat_forMDS) 
-      coverB_filt_flat_forMDS<-rename(coverB_filt_flat_forMDS, tot_cov =`rowSums(coverB_filt_flat_forMDS)`)
-      coverB_filt_flat_forMDS<-coverB_filt_flat_forMDS %>% subset(rowsums>0) %>% select(-tot_cov)#subset(tot_cov>0)# %>% select(-tot_cov)
+                  coverB_filt_flat_forMDS<-as.data.frame(coverB_filt_flat_forMDS) 
+                    coverB_filt_flat_forMDS<-rename(coverB_filt_flat_forMDS, tot_cov =`rowSums(coverB_filt_flat_forMDS)`)
+                      coverB_filt_flat_forMDS<-coverB_filt_flat_forMDS %>% subset(rowsums>0) %>% select(-tot_cov)#subset(tot_cov>0)# %>% select(-tot_cov)
 
 ## Run NMDS with relative distance (Bray) measure
 coverB_MDS<-metaMDS(coverB_filt_flat_forMDS, distance = "bray", try=100, trymax = 500)
@@ -184,9 +188,6 @@ colnames(stuff_env)
 ## Make a list of env variable names to use in functions later
 vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame() 
 
-
-
-
 ##PASS: Unit test of using the GAM model of Env var ~ NMS Axis 1 + Axis 2 and returns the r.sq
   #stuff_out1<-ordisurf(coverB_MDS~Inclination, stuff_env, main= paste(colnames(stuff_env[5]))) %>% summary() %>% select(r.sq)
   #stuff_out1$r.sq
@@ -195,53 +196,59 @@ vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame()
   
 ## automate ordisurf for all columns
 ## Need to unlist the output of each ordisurf ... str(stuff_out) resultsing a list of 54
-## Error indicates input dimensions don't match
+  ##Unit test for hilstop plot and  grabbing R2 PASSES
+  #tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[25],sep=""))), stuff_env)
+  #tst_hill_stats<-summary(tst_hill) 
+  #tst_hill_stats$r.sq
+  #dev.off()
 
-  tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[25],sep=""))), stuff_env)
-  tst_hill_stats<-summary(tst_hill) 
-  tst_hill_stats$r.sq
-  dev.off()
-
-  tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[4],sep=""))), stuff_env)
-  tst_hill_stats<-summary(tst_hill) 
-  tst_hill_stats$r.sq
-  str(tst_hill_stats)
-  dev.off()
+  #tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[4],sep=""))), stuff_env, )
+  #tst_hill_stats<-summary(tst_hill) 
+  #tst_hill_stats$r.sq
+  #str(tst_hill_stats)
+  #dev.off()
   
   
-    
+  ##Function to make models ... not sure if it even still get used though
   make_mods<-function (x) {paste("coverB_MDS~",vars[x],sep="") %>% as.formula()}
   var_mods<-lapply(1:length(vars),make_mods)
-  
-  eval(var_mods[1])
-  
-    tst1<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
-    tst
-    dev.off()
-    tst<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
+    ##eval(var_mods[1])
+    ##Unit test for making linear biplot vector for elevation PASSSES
+    #tst1<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
+    #tst1
+    #dev.off()
+    #tst2<-elev_hilltop<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]),labcex=0, col='black')
+    #elev_hilltop
+    #ordisurf(eval(parse(text=paste("coverB_MDS~",vars[4],sep=""))), stuff_env, main= paste(vars[4]),labcex=0, add=T)
+    #text(max(stuff$MDS1)*0.9, max(stuff$MDS2)*0.95, paste("R2",ordi_stats_out[2,2])) 
+    #dev.off()
+    #tst2
+##Make R2, give them sensible names and write out as CSV
+      ordi_stats<-function(x)
+      {
+      out1<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[x],sep=""))), stuff_env) %>% summary()
+      return(round(out1$r.sq,2))
+      }
+        ordi_stats_out<-lapply(1:length(vars),ordi_stats)
+          ordi_stats_out<-cbind(vars,ordi_stats_out) %>% as.data.frame()
+            colnames(ordi_stats_out)<-c("Env Variable","R squared")
+              write.csv(ordi_stats_out, "Patached_TransectB_CommunityEnv_NMS_GAM_fit.csv")
     
-    ordi_fit<-function(x) {ordisurf(eval(parse(text=paste("coverB_MDS~",vars[x],sep=""))), stuff_env, main= paste(vars[x]))
-      elev<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
-      plot(elev)}
+#Make hilltop plots with R2 
+    ordi_fit<-function(x) 
+            {
+      ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= "",labcex=0, col='black')  
+        ordisurf(eval(parse(text=paste("coverB_MDS~",vars[x],sep=""))), stuff_env, main= paste(vars[x]),labcex=0, add=T)
+          text(max(stuff$MDS1)*0.5, max(stuff$MDS2)*0.95, paste("R2=",ordi_stats_out[x,2]), cex=2)
+           #elev<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
+           # plot(elev, cex=1.5)
+            }
     
-    
-    length(stuff_env)
-    
-    ## Why does this produce a vector of numbers read as characters?
-    #vars<-as.character(vars)
+
     pdf("Patache_Hilltop_Plots.pdf")
     lapply(1:length(vars),ordi_fit)
     dev.off()
     
-    ordi_stats<-function(x)
-    {
-    out1<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[x],sep=""))), stuff_env) %>% summary()
-    return(round(out1$r.sq,2))}
-    
-    ordi_stats_out<-lapply(1:length(vars),ordi_stats)
-    ordi_stats_out<-cbind(vars,ordi_stats_out)
-    colnames(ordi_stats_out)<-c("Env Variable","R squared")
-    write.csv(ordi_stats_out, "Patached_TransectB_CommunityEnv_NMS_GAM_fit.csv")
 ######### Second matrix ... Daniel recommeded starting looking at microclimate, specifically
 ######### sat85_dry, Tmed, VPDmed ... where are these columns?
 ## Find files with data from same quadrats/elevations on transect B
