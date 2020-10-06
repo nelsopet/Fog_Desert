@@ -1,13 +1,16 @@
-install.packages('devtools')
+#install.packages('devtools')
+#Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
+
 devtools::install_github('phytomosaic/foggy')
 devtools::install_github('phytomosaic/ecole')
+
 require(tidyverse)
 require(vegan)
-require(R-metrics)
+require(Metrics)
 
 ## Two objects need to be read in
 cover<-read.csv('data/CoverMaster.csv')
-#cover$UID<-paste(cover$Elevation, cover$Quadrat, sep="_")
+cover$UID<-paste(cover$Elevation, cover$Quadrat, sep="_")
 
 #str(cover)
 #'data.frame':	1522 obs. of  8 variables:
@@ -116,6 +119,12 @@ anti_join(cover, trait, by="Species") %>% select(Species) %>% unique() %>% nrow(
 #876          Nieblavagans
 #879            Endolithic
 
+#Read in spectra by quadrat
+spectra<-read.csv('data/Spectral_Features.csv')
+View(spectra)
+dim(spectra) # [1] 130 115
+
+
 ## Build a regular NMDS using only transect B, which has the complete community and environmental data
   coverB<-subset(cover, Transect=='B')
     coverB$Cover<-as.character(coverB$Cover)
@@ -165,7 +174,7 @@ anti_join(cover, trait, by="Species") %>% select(Species) %>% unique() %>% nrow(
 
 ## Run NMDS with relative distance (Bray) measure
 coverB_MDS<-metaMDS(coverB_filt_flat_forMDS, distance = "bray", try=100, trymax = 500)
-
+plot(coverB_MDS)
 # Make the a column in the NMDS output that is the quadrat UID to be able to join with the env data 
 #Need to filter Env_matrix to only have the 49 rows but now has rownames
 stuff<-coverB_MDS$points %>% as.data.frame() %>% mutate(UID= rownames(coverB_MDS$points)) 
@@ -182,14 +191,15 @@ stuff_env<-Env_matrix_B %>% inner_join(stuff, by="UID")  %>% as.data.frame() # %
 stuff_env<-stuff_env %>% 
   inner_join(trait, by="UID")  %>% 
   as.data.frame() %>% 
-  select(UID, X, Transect, Quadrat, Elevation, everything())
+  select(UID, X.1, Transect, Quadrat, Elevation, everything())
 colnames(stuff_env)
-
+  #Write out summary of environmental data
+  stuff_env %>% View()
 ## Make a list of env variable names to use in functions later
 vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame() 
-
+colnames(stuff_env)
 ##PASS: Unit test of using the GAM model of Env var ~ NMS Axis 1 + Axis 2 and returns the r.sq
-  #stuff_out1<-ordisurf(coverB_MDS~Inclination, stuff_env, main= paste(colnames(stuff_env[5]))) %>% summary() %>% select(r.sq)
+  stuff_out1<-ordisurf(coverB_MDS~Inclination, stuff_env, main= paste(colnames(stuff_env[5]))) %>% summary() #%>% select(r.sq)
   #stuff_out1$r.sq
   #dev.off()
   
@@ -197,9 +207,9 @@ vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame()
 ## automate ordisurf for all columns
 ## Need to unlist the output of each ordisurf ... str(stuff_out) resultsing a list of 54
   ##Unit test for hilstop plot and  grabbing R2 PASSES
-  #tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[25],sep=""))), stuff_env)
-  #tst_hill_stats<-summary(tst_hill) 
-  #tst_hill_stats$r.sq
+  tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env)
+  tst_hill_stats<-summary(tst_hill) 
+  tst_hill_stats$r.sq
   #dev.off()
 
   #tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[4],sep=""))), stuff_env, )
@@ -212,11 +222,11 @@ vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame()
   ##Function to make models ... not sure if it even still get used though
   make_mods<-function (x) {paste("coverB_MDS~",vars[x],sep="") %>% as.formula()}
   var_mods<-lapply(1:length(vars),make_mods)
-    ##eval(var_mods[1])
+    eval(var_mods[1])
     ##Unit test for making linear biplot vector for elevation PASSSES
-    #tst1<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
-    #tst1
-    #dev.off()
+    tst1<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
+    plot(tst1)
+    dev.off()
     #tst2<-elev_hilltop<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]),labcex=0, col='black')
     #elev_hilltop
     #ordisurf(eval(parse(text=paste("coverB_MDS~",vars[4],sep=""))), stuff_env, main= paste(vars[4]),labcex=0, add=T)
@@ -228,23 +238,27 @@ vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame()
       {
       out1<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[x],sep=""))), stuff_env) %>% summary()
       return(round(out1$r.sq,2))
+      return(round(out1$se,2))
       }
-        ordi_stats_out<-lapply(1:length(vars),ordi_stats)
+        ordi_stats_out<-lapply(1:length(vars),ordi_stats) %>% unlist()
           ordi_stats_out<-cbind(vars,ordi_stats_out) %>% as.data.frame()
             colnames(ordi_stats_out)<-c("Env Variable","R squared")
-              write.csv(ordi_stats_out, "Patached_TransectB_CommunityEnv_NMS_GAM_fit.csv")
+              ##Now write.csv doesn't work!?
+              write_csv(ordi_stats_out, "Patached_TransectB_CommunityEnv_NMS_GAM_fit.csv")
     
 #Make hilltop plots with R2 
     ordi_fit<-function(x) 
             {
+      ##jpeg(paste("Patache_Hilltop",vars[x],".jpeg"))
       ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= "",labcex=0, col='black')  
-        ordisurf(eval(parse(text=paste("coverB_MDS~",vars[x],sep=""))), stuff_env, main= paste(vars[x]),labcex=0, add=T)
+        ordisurf(eval(parse(text=paste("coverB_MDS~",vars[x],sep=""))), stuff_env, main= paste(vars[x]),labcex=1, add=T)
           text(max(stuff$MDS1)*0.5, max(stuff$MDS2)*0.95, paste("R2=",ordi_stats_out[x,2]), cex=2)
            #elev<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
            # plot(elev, cex=1.5)
+      ##dev.off()
+          
             }
     
-
     pdf("Patache_Hilltop_Plots.pdf")
     lapply(1:length(vars),ordi_fit)
     dev.off()
@@ -255,3 +269,4 @@ vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame()
 ## anat, he, he_red, quad, rou, rouVar all are filterable by transect
 ## angles, dry only has data for transect B
 ## unclear which transect rock and rock_st came from
+    stuff_env[,-1:-4] %>% cor(use="pairwise.complete.obs") %>% cov2cor() %>% view()
