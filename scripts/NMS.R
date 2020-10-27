@@ -7,21 +7,17 @@ devtools::install_github('phytomosaic/ecole')
 require(tidyverse)
 require(vegan)
 require(Metrics)
-
-## Two objects need to be read in
+require(hsdar)
+## Read in cover data
 cover<-read.csv('data/CoverMaster.csv')
-cover$UID<-paste(cover$Elevation, cover$Quadrat, sep="_")
+  cover$UID<-paste(cover$Elevation, cover$Quadrat, sep="_")
+    dim(cover) #[1] 1522    9
 
-#str(cover)
-#'data.frame':	1522 obs. of  8 variables:
-#  $ Elevation : int  450 450 450 450 450 450 450 450 450 450 ...
-#$ Transect  : Factor w/ 3 levels "","A","B": 2 2 2 2 2 2 2 2 2 2 ...
-#$ Quadrat   : Factor w/ 36 levels "","1","10","10b",..: 2 20 23 25 27 27 27 29 31 33 ...
-#$ Species   : Factor w/ 158 levels "","AcarosporaBull",..: 1 38 1 1 38 114 152 38 1 1 ...
-#$ Cover     : Factor w/ 17 levels "","1","10","11",..: 1 8 1 1 8 15 17 17 1 1 ...
-#$ Collection: Factor w/ 204 levels "","no coll","T450_A2.1",..: 1 3 1 1 3 4 5 3 1 1 ...
-#$ Long_Form : Factor w/ 94 levels "","Acarospora bullate",..: 1 20 1 1 1 1 1 1 1 1 ...
-#$ Photos    : Factor w/ 2 levels "","DSC3979": 1 1 1 1 1 1 1 1 1 1 ...
+# read in species-level traits
+traits_sp<-read.csv('data/Traits_TransB.csv')
+  View(traits_sp)
+    dim(traits_sp) #[1] 356  26
+      traits_sp %>% 
 
 ##where is the Env data read in?
 Env_matrix_B<-read.csv('data/Env_matrix_B.csv')
@@ -255,7 +251,7 @@ colnames(stuff_env)
           text(max(stuff$MDS1)*0.5, max(stuff$MDS2)*0.95, paste("R2=",ordi_stats_out[x,2]), cex=2)
            #elev<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
            # plot(elev, cex=1.5)
-      ##dev.off()
+      #dev.off()
           
             }
     
