@@ -18,6 +18,9 @@ traits_sp<-read.csv('data/Traits_TransB.csv')
   View(traits_sp)
     dim(traits_sp) #[1] 356  26
       traits_sp %>% 
+        dplyr::select(Species, Photobiont) %>%
+          unique() %>%
+            write.csv("traits_species_photobiont_for_review.csv")
 
 ##where is the Env data read in?
 Env_matrix_B<-read.csv('data/Env_matrix_B.csv')
