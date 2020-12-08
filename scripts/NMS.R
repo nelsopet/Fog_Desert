@@ -64,13 +64,18 @@ dim(spectra) # [1] 130 115
       
       
   coverB_flat<-coverB %>% dplyr::select(-Collection, -Long_Form, -Photos) %>% spread(Species, Cover) #%>% dim()
+<<<<<<< HEAD
   coverB_flat_forMDS<-dplyr::select(coverB_flat, -Elevation, -Transect, -Quadrat,-V1) #%>% colnames()
+=======
+  coverB_flat_forMDS<-dplyr::select(coverB_flat, -Elevation, -Transect, -Quadrat,-V1)
+>>>>>>> 24bdc68802f7d20931ca70c6f3ab6a5f1eb44eac
     coverB_flat_forMDS<-sapply(coverB_flat_forMDS, as.numeric) %>% as.data.frame()
       coverB_flat_forMDS[is.na(coverB_flat_forMDS)]<-0
         coverB_flat_forMDS<-cbind(coverB_flat_forMDS,as.data.frame(rowSums(coverB_flat_forMDS)))
           coverB_flat_forMDS<-as.data.frame(coverB_flat_forMDS) 
             coverB_flat_forMDS<-rename(coverB_flat_forMDS, tot_cov =`rowSums(coverB_flat_forMDS)`)
               coverB_flat_forMDS<-coverB_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
+<<<<<<< HEAD
   
   #Trebouxia matrix
               #LEFT OFF HERE
@@ -79,13 +84,26 @@ dim(spectra) # [1] 130 115
       dplyr::select(Elevation, Transect, Quadrat, UID, Species, Cover) %>% #group_by(Cover) %>% tally()
         pivot_wider(-Elevation, names_from = Species, values_from = Cover) #%>% View() 
    #coverB_Treb_flat_forMDS<-dplyr::select(coverB_Treb_flat, -Transect, -Quadrat, -Elevation) %>% colnames()
+=======
+    #Trebouxia matrix
+              #LEFT OFF HERE
+   coverB_Treb_flat_forMDS<- coverB_Treb %>% #dplyr::select(-Collection, -Long_Form, -Photos, -Photobiont) %>% spread(Species, Cover)
+     #rename(Elevation = Elevation.x, Transect = Transect.x, Quadrat = Quadrat.x, Cover = Cover.x) %>% #View()
+      dplyr::select(Elevation, Transect, Quadrat, UID, Species, Cover) %>% #group_by(Cover) %>% tally()
+        pivot_wider(-Elevation, names_from = Species, values_from = Cover) #%>% View() 
+   #coverB_Treb_flat_forMDS<-dplyr::select(coverB_Treb_flat, -Elevation, -Transect, -Quadrat,-V1)
+>>>>>>> 24bdc68802f7d20931ca70c6f3ab6a5f1eb44eac
    coverB_Treb_flat_forMDS[is.na(coverB_Treb_flat_forMDS)]<-0
    coverB_Treb_flat_forMDS<-sapply(coverB_Treb_flat_forMDS, as.numeric) %>% as.data.frame()
    coverB_Treb_flat_forMDS<-cbind(coverB_Treb_flat_forMDS,as.data.frame(rowSums(coverB_Treb_flat_forMDS)))
    coverB_Treb_flat_forMDS<-as.data.frame(coverB_Treb_flat_forMDS) 
    coverB_Treb_flat_forMDS<-rename(coverB_Treb_flat_forMDS, tot_cov =`rowSums(coverB_Treb_flat_forMDS)`)
    coverB_Treb_flat_forMDS<-coverB_Treb_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
+<<<<<<< HEAD
         coverB_Treb_flat_forMDS %>% group_by(tot_cov) %>% tally()
+=======
+              
+>>>>>>> 24bdc68802f7d20931ca70c6f3ab6a5f1eb44eac
     
     #Trentepohlia matrix
    coverB_Trent_flat<-coverB_Trent %>% #colnames()
@@ -102,6 +120,7 @@ dim(spectra) # [1] 130 115
    
               
               
+<<<<<<< HEAD
   coverB_MDS<-metaMDS(coverB_flat_forMDS, distance = "bray", try=500, trymax = 1000)
     plot(coverB_MDS)  
       dev.off()
@@ -112,6 +131,18 @@ dim(spectra) # [1] 130 115
     plot(coverB_Trent_MDS)  
       dev.off()
    #### LEFT OFF HERE     
+=======
+  coverB_MDS<-metaMDS(coverB_flat_forMDS, distance = "bray", try=100, trymax = 500)
+    plot(coverB_MDS)  
+      dev.off()
+  coverB_Treb_MDS<-metaMDS(coverB_Treb_flat_forMDS, distance = "bray", try=100, trymax = 500)
+    plot(coverB_Treb_MDS)  
+       dev.off()
+  coverB_Trent_MDS<-metaMDS(coverB_Trent_flat_forMDS, distance = "bray", try=100, trymax = 500)
+    plot(coverB_Trent_MDS)  
+      dev.off()
+        
+>>>>>>> 24bdc68802f7d20931ca70c6f3ab6a5f1eb44eac
 ## The NMDS above includes all quadrats, including those which had no lichens.
 ## Those empty plots need to be removed by calculating and filtering by total cover > 0
   coverB_filt<-subset(cover, Transect=='B') ## 'data.frame':	342 obs. of  8 variables:, 7 factors and 1 integer
