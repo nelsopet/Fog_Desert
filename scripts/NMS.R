@@ -21,6 +21,8 @@ traits_sp<-read.csv('data/Traits_TransB.csv')
         dplyr::select(Species, Photobiont) %>%
           unique() %>%
             write.csv("traits_species_photobiont_for_review.csv")
+colnames(traits_sp)
+
 
 ##where is the Env data read in?
 Env_matrix_B<-read.csv('data/Env_matrix_B.csv')
@@ -31,92 +33,10 @@ trait<-read.csv('data/QuadratMeanTraits_Unweighted.csv')
 trait$UID<-paste(trait$Elevation, trait$Quadrat, sep="_")
 View(trait)
 trait<-trait[,-1:-4]
-  #'data.frame':	49 obs. of  11 variables:
-  #  $ X              : int  1 2 3 4 5 6 7 8 9 10 ...
-  #$ Transect       : Factor w/ 1 level "B": 1 1 1 1 1 1 1 1 1 1 ...
-  #$ Elevation      : int  300 400 500 600 700 800 400 500 600 700 ...
-  #$ Quadrat        : int  1 1 1 1 1 1 10 10 10 10 ...
-  #$ Time_Surface   : num  1 1.16 13.67 10.18 25.83 ...
-  #$ Time_Absorption: num  7.17 23.89 26.58 32.23 65.74 ...
-  #$ Angle          : num  130 97.5 103.3 93.8 92.8 ...
-  #$ .N             : num  NA 1.18 0.95 1.76 1.37 ...
-  #$ d15N           : num  NA 1.71 -1.24 -0.215 -0.529 ...
-  #$ .C             : num  NA 40.7 28.8 28.8 30.5 ...
-  #$ d13C           : num  NA -24.4 -28.6 -21.3 -24 ... 
-#test to make sure all species in cover are in trait df
-#976 rows without 
 anti_join(cover, trait, by="UID") %>% nrow()
 nrow(Env_matrix_B)
 # 69 species with no trait data
 anti_join(cover, trait, by="Species") %>% select(Species) %>% unique() %>% nrow()
-#2              Caloplaca2
-#6             Roccellina1
-#22          ArthoniaRocc1
-#23         LightBrownRocc
-#25            Roccellina2
-#28               Buellia3
-#30              Ramalina2
-#36               Buellia2
-#37     YellowRhizocarpon2
-#38            BuelliaBlue
-#40             Caloplaca3
-#41             GrayCrust1
-#44               Buellia4
-#55             BrownLumpy
-#56   Caloplacapergracilis
-#57                Niebla3
-#58              WhiteFoam
-#59             Rhizoplaca
-#60          Sclerophyton1
-#61         Candelariella1
-#64    Roccellinaterricola
-#65  TerricolousWhiteCrust
-#68               Buellia1
-#70         DarkBrownSmear
-#74            Amigdalaria
-#75   Caloplacataltalensis
-#78              Lepraria1
-#80              Xanthoria
-#83    YellowConvexBuellia
-#88               Ramalina
-#94    DarkGrayRhizocarpon
-#108        WhiteRhizoPara
-#110        Candelariella3
-#123   TinyGreyRhizocarpon
-#135  ClumpyMustardBuellia
-#137    BrownConvexBuellia
-#138 Caloplacasubhervidela
-#140          Chrysothrix2
-#150        Candelariella2
-#152         Heterodermia1
-#208               Niebla1
-#219            BlackRhizo
-#231          Chrysothrix1
-#245         Heterodermia2
-#246               Niebla4
-#254          GrayLepraria
-#260        BrownAspicilia
-#308         GreenLepraria
-#339               Niebla2
-#360          GrayIsidiate
-#425         WhiteBuellia2
-#583         Cyanobacteria
-#596      GraySorAspicilia
-#607     RoccellaFruticose
-#611         BrownIsidiate
-#620              BrownSor
-#623            Caloplaca1
-#650         Sclerophyton2
-#652          YellowCrust1
-#684           BrownCrust1
-#760            Aspicilia1
-#826       PaleRhizocarpon
-#833         WhiteSorAreol
-#839          Pyrenodesmia
-#854       RoccellinaCereb
-#860    GraySorRhizocarpon
-#876          Nieblavagans
-#879            Endolithic
 
 #Read in spectra by quadrat
 spectra<-read.csv('data/Spectral_Features.csv')
@@ -128,17 +48,70 @@ dim(spectra) # [1] 130 115
   coverB<-subset(cover, Transect=='B')
     coverB$Cover<-as.character(coverB$Cover)
       coverB$Cover[coverB$Cover=="T"]<-0.25
-  coverB_flat<-coverB %>% select(-Collection, -Long_Form, -Photos) %>% spread(Species, Cover)
-  coverB_flat_forMDS<-select(coverB_flat, -Elevation, -Transect, -Quadrat,-V1)
+      
+      #Check to see if all the taxa in coverB, the subset of the cover data used, have traits to filter by
+      biont = c("Trebouxia","Trentepohlia")
+      traits_sp_filt<-traits_sp %>% dplyr::select(Species, Photobiont) %>% unique() %>% as.data.frame()
+      coverB_Treb<-coverB %>% 
+        left_join(traits_sp_filt,by="Species", keep=F) %>% 
+        subset(Photobiont %in% biont) %>%
+        subset(Photobiont == "Trebouxia") #%>% View()
+      #()#only 11 rows don't match #[1] 11
+      coverB_Trent<-coverB %>% 
+        left_join(traits_sp_filt,by="Species", keep=F) %>% #dim()
+        subset(Photobiont %in% biont) %>%
+        subset(Photobiont == "Trentepohlia")
+      
+      
+  coverB_flat<-coverB %>% dplyr::select(-Collection, -Long_Form, -Photos) %>% spread(Species, Cover) #%>% dim()
+  coverB_flat_forMDS<-dplyr::select(coverB_flat, -Elevation, -Transect, -Quadrat,-V1) #%>% colnames()
     coverB_flat_forMDS<-sapply(coverB_flat_forMDS, as.numeric) %>% as.data.frame()
       coverB_flat_forMDS[is.na(coverB_flat_forMDS)]<-0
         coverB_flat_forMDS<-cbind(coverB_flat_forMDS,as.data.frame(rowSums(coverB_flat_forMDS)))
           coverB_flat_forMDS<-as.data.frame(coverB_flat_forMDS) 
             coverB_flat_forMDS<-rename(coverB_flat_forMDS, tot_cov =`rowSums(coverB_flat_forMDS)`)
-              coverB_flat_forMDS<-coverB_flat_forMDS %>% subset(tot_cov>0) %>% select(-tot_cov)
-  coverB_MDS<-metaMDS(coverB_flat_forMDS, distance = "bray", try=100, trymax = 500)
+              coverB_flat_forMDS<-coverB_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
+  
+  #Trebouxia matrix
+              #LEFT OFF HERE
+   coverB_Treb_flat<- coverB_Treb %>% #dplyr::select(-Collection, -Long_Form, -Photos, -Photobiont) %>% spread(Species, Cover)
+     #rename(Elevation = Elevation.x, Transect = Transect.x, Quadrat = Quadrat.x, Cover = Cover.x) %>% #View()
+      dplyr::select(Elevation, Transect, Quadrat, UID, Species, Cover) %>% #group_by(Cover) %>% tally()
+        pivot_wider(-Elevation, names_from = Species, values_from = Cover) #%>% View() 
+   #coverB_Treb_flat_forMDS<-dplyr::select(coverB_Treb_flat, -Transect, -Quadrat, -Elevation) %>% colnames()
+   coverB_Treb_flat_forMDS[is.na(coverB_Treb_flat_forMDS)]<-0
+   coverB_Treb_flat_forMDS<-sapply(coverB_Treb_flat_forMDS, as.numeric) %>% as.data.frame()
+   coverB_Treb_flat_forMDS<-cbind(coverB_Treb_flat_forMDS,as.data.frame(rowSums(coverB_Treb_flat_forMDS)))
+   coverB_Treb_flat_forMDS<-as.data.frame(coverB_Treb_flat_forMDS) 
+   coverB_Treb_flat_forMDS<-rename(coverB_Treb_flat_forMDS, tot_cov =`rowSums(coverB_Treb_flat_forMDS)`)
+   coverB_Treb_flat_forMDS<-coverB_Treb_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
+        coverB_Treb_flat_forMDS %>% group_by(tot_cov) %>% tally()
+    
+    #Trentepohlia matrix
+   coverB_Trent_flat<-coverB_Trent %>% #colnames()
+     #rename(Elevation = Elevation.x, Transect = Transect.x, Quadrat = Quadrat.x, Cover = Cover.x) %>% #View()
+     dplyr::select(Elevation, Transect, Quadrat, UID, Species, Cover) %>% #head()
+     pivot_wider( names_from = Species, values_from = Cover) #%>% View()
+   coverB_Trent_flat_forMDS<-dplyr::select(coverB_Trent_flat, -Elevation, -Transect, -Quadrat)
+   coverB_Trent_flat_forMDS<-sapply(coverB_Trent_flat_forMDS, as.numeric) %>% as.data.frame()
+   coverB_Trent_flat_forMDS[is.na(coverB_Trent_flat_forMDS)]<-0
+   coverB_Trent_flat_forMDS<-cbind(coverB_Trent_flat_forMDS,as.data.frame(rowSums(coverB_Trent_flat_forMDS)))
+   coverB_Trent_flat_forMDS<-as.data.frame(coverB_Trent_flat_forMDS) 
+   coverB_Trent_flat_forMDS<-rename(coverB_Trent_flat_forMDS, tot_cov =`rowSums(coverB_Trent_flat_forMDS)`)
+   coverB_Trent_flat_forMDS<-coverB_Trent_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
+   
+              
+              
+  coverB_MDS<-metaMDS(coverB_flat_forMDS, distance = "bray", try=500, trymax = 1000)
     plot(coverB_MDS)  
       dev.off()
+  coverB_Treb_MDS<-metaMDS(coverB_Treb_flat_forMDS, distance = "bray", try=500, trymax = 1000)
+    plot(coverB_Treb_MDS)  
+       dev.off()
+  coverB_Trent_MDS<-metaMDS(coverB_Trent_flat_forMDS, distance = "bray", try=500, trymax = 1000)
+    plot(coverB_Trent_MDS)  
+      dev.off()
+   #### LEFT OFF HERE     
 ## The NMDS above includes all quadrats, including those which had no lichens.
 ## Those empty plots need to be removed by calculating and filtering by total cover > 0
   coverB_filt<-subset(cover, Transect=='B') ## 'data.frame':	342 obs. of  8 variables:, 7 factors and 1 integer
