@@ -201,13 +201,71 @@ substrate<-read.csv('data/Substrate_PatacheB.csv',header=T)
     plot(coverB_MDS)  
       dev.off()
       
+      
+      #Shephard plots and stress vs dim from Stackoverflow post
+      #https://stackoverflow.com/questions/49223740/cumulative-variance-explained-for-nmds-in-r/49224573
+      
+      #par(mfrow = c(1,2), mar = c(3.5,3.5,3,1), mgp = c(2, 0.6, 0), cex = 0.8, las = 1)
+      spear <- round(cor(vegdist(coverB_flat_forMDS, method = "bray"), dist(coverB_MDS$points), method = "spearman"),3)
+      plot(vegdist(coverB_flat_forMDS, method = "bray"), dist(coverB_MDS$points), main = "Shepard diagram of coverB_MDS", 
+           xlab = "True Bray-Curtis distance", ylab = "Distance in the reduced space")
+      mtext(line = 0.1, text = paste0("Spearman correlation = ", spear), cex = 0.7)
+      
+      n = 10
+      stress <- vector(length = n)
+      for (i in 1:n) {
+        stress[i] <- metaMDS(coverB_flat_forMDS, distance = "bray", k = i)$stress
+      }
+      names(stress) <- paste0(1:n, "Dim")
+      # x11(width = 10/2.54, height = 7/2.54)
+      par(mar = c(3.5,3.5,1,1), mgp = c(2, 0.6, 0), cex = 0.8, las = 2)
+      barplot(stress, ylab = "stress")
+      
   coverB_Treb_MDS<-metaMDS(coverB_Treb_flat_forMDS, distance = "bray", try=500, trymax = 1000)
     plot(coverB_Treb_MDS)  
        dev.off()
        
+       #Shephard plots and stress vs dim from Stackoverflow post
+       #https://stackoverflow.com/questions/49223740/cumulative-variance-explained-for-nmds-in-r/49224573
+       
+       spear_Treb <- round(cor(vegdist(coverB_Treb_flat_forMDS, method = "bray"), dist(coverB_Treb_MDS$points), method = "spearman"),3)
+       plot(vegdist(coverB_Treb_flat_forMDS, method = "bray"), dist(coverB_Treb_MDS$points), main = "Shepard diagram of coverB_MDS", 
+            xlab = "True Bray-Curtis distance", ylab = "Distance in the reduced space")
+       mtext(line = 0.1, text = paste0("Spearman correlation = ", spear_Treb), cex = 0.7)
+       
+       
+       n = 10
+       stress <- vector(length = n)
+       for (i in 1:n) {
+         stress[i] <- metaMDS(coverB_Treb_flat_forMDS, distance = "bray", k = i)$stress
+       }
+       names(stress) <- paste0(1:n, "Dim")
+       # x11(width = 10/2.54, height = 7/2.54)
+       par(mar = c(3.5,3.5,1,1), mgp = c(2, 0.6, 0), cex = 0.8, las = 2)
+       barplot(stress, ylab = "stress")
+       
   coverB_Trent_MDS<-metaMDS(coverB_Trent_flat_forMDS, distance = "bray", try=500, trymax = 1000)
     plot(coverB_Trent_MDS)  
       dev.off()
+      
+      #Shephard plots and stress vs dim from Stackoverflow post
+      #https://stackoverflow.com/questions/49223740/cumulative-variance-explained-for-nmds-in-r/49224573
+      
+      spear_Trent <- round(cor(vegdist(coverB_Trent_flat_forMDS, method = "bray"), dist(coverB_Trent_MDS$points), method = "spearman"),3)
+      plot(vegdist(coverB_Trent_flat_forMDS, method = "bray"), dist(coverB_Trent_MDS$points), main = "Shepard diagram of coverB_MDS", 
+           xlab = "True Bray-Curtis distance", ylab = "Distance in the reduced space")
+      mtext(line = 0.1, text = paste0("Spearman correlation = ", spear_Trent), cex = 0.7)
+      
+      
+      n = 10
+      stress <- vector(length = n)
+      for (i in 1:n) {
+        stress[i] <- metaMDS(coverB_Trent_flat_forMDS, distance = "bray", k = i)$stress
+      }
+      names(stress) <- paste0(1:n, "Dim")
+      # x11(width = 10/2.54, height = 7/2.54)
+      par(mar = c(3.5,3.5,1,1), mgp = c(2, 0.6, 0), cex = 0.8, las = 2)
+      barplot(stress, ylab = "stress")
 
 #OLD ## The NMDS above includes all quadrats, including those which had no lichens.
 #OLD       #QUESTION: Is this still true? I filtero out quadrats with cover<0
@@ -408,12 +466,12 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     
     ######Hilltop plots for Trebouxioud lichens
     
-    ordi_fit<-function(x) 
+    ordi_fit_Treb<-function(x) 
     {
       ##jpeg(paste("Patache_Hilltop",vars_Treb[x],".jpeg"))
       ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[1],sep=""))), stuff_env_Treb, main= "",labcex=0, col='black')  
       ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[x],sep=""))), stuff_env_Treb, main= paste(vars_Treb[x]),labcex=1, add=T)
-      text(max(stuff_Treb$MDS1)*0.5, max(stuff_Treb$MDS2)*0.95, paste("R2=",ordi_stats_out[x,2]), cex=2)
+      text(max(stuff_Treb$MDS1)*0.5, max(stuff_Treb$MDS2)*0.95, paste("R2=",ordi_stats_out_Treb[x,2]), cex=2)
       #elev<-envfit(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[2],sep=""))), stuff_env_Treb, main= paste(vars_Treb[2]))
       # plot(elev, cex=1.5)
       #dev.off()
@@ -421,7 +479,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     }
     
     pdf("Patache_Hilltop_Plots_Treb.pdf")
-    lapply(1:length(vars_Treb),ordi_fit)
+    lapply(1:length(vars_Treb),ordi_fit_Treb)
     dev.off()
     
     
@@ -429,12 +487,12 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     
     ######Hilltop plots for Trentepohlioid lichens
     
-    ordi_fit<-function(x) 
+    ordi_fit_Trent<-function(x) 
     {
       ##jpeg(paste("Patache_Hilltop",vars_Trent[x],".jpeg"))
       ordisurf(eval(parse(text=paste("coverB_Trent_MDS~",vars_Trent[1],sep=""))), stuff_env_Trent, main= "",labcex=0, col='black')  
       ordisurf(eval(parse(text=paste("coverB_Trent_MDS~",vars_Trent[x],sep=""))), stuff_env_Trent, main= paste(vars_Trent[x]),labcex=1, add=T)
-      text(max(stuff_Trent$MDS1)*0.5, max(stuff_Trent$MDS2)*0.95, paste("R2=",ordi_stats_out[x,2]), cex=2)
+      text(max(stuff_Trent$MDS1)*0.5, max(stuff_Trent$MDS2)*0.95, paste("R2=",ordi_stats_out_Trent[x,2]), cex=2)
       #elev<-envfit(eval(parse(text=paste("coverB_Trent_MDS~",vars_Trent[2],sep=""))), stuff_env_Trent, main= paste(vars_Trent[2]))
       # plot(elev, cex=1.5)
       #dev.off()
@@ -442,7 +500,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     }
     
     pdf("Patache_Hilltop_Plots_Trent.pdf")
-    lapply(1:length(vars_Trent),ordi_fit)
+    lapply(1:length(vars_Trent),ordi_fit_Trent)
     dev.off()
     
     
