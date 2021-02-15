@@ -252,9 +252,9 @@ substrate<-read.csv('data/Substrate_PatacheB.csv',header=T)
 
 # Make the a column in the NMDS output that is the quadrat UID to be able to join with the env data 
 #Need to filter Env_matrix to only have the 49 rows but now has rownames
-stuff<-coverB_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds) 
-stuff_Trent<-coverB_Trent_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds_Trent$UID)
-stuff_Treb<-coverB_Treb_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds_Treb$UID)
+stuff<-coverB_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds)  %>% replace(is.na(.),0)
+stuff_Trent<-coverB_Trent_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds_Trent$UID) %>% replace(is.na(.),0)
+stuff_Treb<-coverB_Treb_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds_Treb$UID) %>% replace(is.na(.),0)
   stuff_Treb$UID<-as.character(stuff_Treb$UID)
 ## Join the NMDS data with the 
   str(Env_matrix_B)
@@ -294,9 +294,9 @@ stuff_env_Treb<-stuff_env_Treb %>%
 
 
 ## Make a list of env variable names to use in functions later
-vars<-colnames(stuff_env[4:length(stuff_env)])  #%>% as.data.frame() 
-vars_Treb<-colnames(stuff_env_Treb[4:length(stuff_env_Treb)])  #%>% as.data.frame() 
-vars_Trent<-colnames(stuff_env_Trent[4:length(stuff_env_Trent)])  #%>% as.data.frame() 
+vars<-colnames(stuff_env[5:length(stuff_env)-1])  #%>% #as.data.frame() %>% dplyr::select(-Total)
+vars_Treb<-colnames(stuff_env_Treb[5:length(stuff_env_Treb)-1])#  %>% replace(is.na(.),0) %>% select(-Total)
+vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace(is.na(.),0) %>% select(-Total)
 
 ##PASS: Unit test of using the GAM model of Env var ~ NMS Axis 1 + Axis 2 and returns the r.sq
   stuff_out1<-ordisurf(coverB_MDS~Inclination, stuff_env, main= paste(colnames(stuff_env[1]))) %>% summary() #%>% select(r.sq)
@@ -352,22 +352,39 @@ vars_Trent<-colnames(stuff_env_Trent[4:length(stuff_env_Trent)])  #%>% as.data.f
             colnames(ordi_stats_out)<-c("Env Variable","R squared")
               ##Now write.csv doesn't work!?
               write_csv(ordi_stats_out, "Patached_TransectB_CommunityEnv_NMS_GAM_fit.csv")
-    ##Stats for Treb #LEFT OFF HERE. PROBABLY DOESN'T NEED A SEPARATE FUNCTION FOR EACH MDS OUTPUT.
-              ordi_stats_Treb<-function(x)
-              {
-                #out1<-ordisurf(eval(parse(text=paste(MDS, "~",vars[x],sep=""))), stuff_env) %>% summary()
-                out1<-ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars[x],sep=""))), stuff_env_Treb) %>% summary()
-                return(round(out1$r.sq,2))
-                return(round(out1$se,2))
-              }
-              #ordi_stats_out<-lapply(1:length(vars),ordi_stats(MDS=coverB_MDS)) %>% unlist()
-              ordi_stats_out_Treb<-lapply(1:length(vars_Treb),ordi_stats_Treb) %>% unlist()
-              
-              ordi_stats_out_Treb<-cbind(vars,ordi_stats_out_Treb) %>% as.data.frame()
-              colnames(ordi_stats_out_Treb)<-c("Env Variable","R squared")
-              ##Now write.csv doesn't work!?
-              write_csv(ordi_stats_out_Treb, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Treb.csv")
-              
+   
+       ##Stats for Treb 
+        ordi_stats_Treb<-function(x)
+        {
+          #out1<-ordisurf(eval(parse(text=paste(MDS, "~",vars[x],sep=""))), stuff_env) %>% summary()
+          out1<-ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars[x],sep=""))), stuff_env_Treb) %>% summary()
+          return(round(out1$r.sq,2))
+          return(round(out1$se,2))
+        }
+        #ordi_stats_out<-lapply(1:length(vars),ordi_stats(MDS=coverB_MDS)) %>% unlist()
+        ordi_stats_out_Treb<-lapply(1:length(vars_Treb),ordi_stats_Treb) %>% unlist()
+        
+        ordi_stats_out_Treb<-cbind(vars,ordi_stats_out_Treb) %>% as.data.frame()
+        colnames(ordi_stats_out_Treb)<-c("Env Variable","R squared")
+        ##Now write.csv doesn't work!?
+        write_csv(ordi_stats_out_Treb, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Treb.csv")
+       
+        ##Stats for Trent 
+        ordi_stats_Trent<-function(x)
+        {
+          #out1<-ordisurf(eval(parse(text=paste(MDS, "~",vars[x],sep=""))), stuff_env) %>% summary()
+          out1<-ordisurf(eval(parse(text=paste("coverB_Trent_MDS~",vars[x],sep=""))), stuff_env_Trent) %>% summary()
+          return(round(out1$r.sq,2))
+          return(round(out1$se,2))
+        }
+        #ordi_stats_out<-lapply(1:length(vars),ordi_stats(MDS=coverB_MDS)) %>% unlist()
+        ordi_stats_out_Trent<-lapply(1:length(vars_Trent),ordi_stats_Trent) %>% unlist()
+        
+        ordi_stats_out_Trent<-cbind(vars,ordi_stats_out_Trent) %>% as.data.frame()
+        colnames(ordi_stats_out_Trent)<-c("Env Variable","R squared")
+        ##Now write.csv doesn't work!?
+        write_csv(ordi_stats_out_Trent, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Trent.csv")
+        
               
               
 #Make hilltop plots with R2 
@@ -386,6 +403,48 @@ vars_Trent<-colnames(stuff_env_Trent[4:length(stuff_env_Trent)])  #%>% as.data.f
     pdf("Patache_Hilltop_Plots.pdf")
     lapply(1:length(vars),ordi_fit)
     dev.off()
+    
+    
+    
+    ######Hilltop plots for Trebouxioud lichens
+    
+    ordi_fit<-function(x) 
+    {
+      ##jpeg(paste("Patache_Hilltop",vars_Treb[x],".jpeg"))
+      ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[1],sep=""))), stuff_env_Treb, main= "",labcex=0, col='black')  
+      ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[x],sep=""))), stuff_env_Treb, main= paste(vars_Treb[x]),labcex=1, add=T)
+      text(max(stuff_Treb$MDS1)*0.5, max(stuff_Treb$MDS2)*0.95, paste("R2=",ordi_stats_out[x,2]), cex=2)
+      #elev<-envfit(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[2],sep=""))), stuff_env_Treb, main= paste(vars_Treb[2]))
+      # plot(elev, cex=1.5)
+      #dev.off()
+      
+    }
+    
+    pdf("Patache_Hilltop_Plots_Treb.pdf")
+    lapply(1:length(vars_Treb),ordi_fit)
+    dev.off()
+    
+    
+    
+    
+    ######Hilltop plots for Trentepohlioid lichens
+    
+    ordi_fit<-function(x) 
+    {
+      ##jpeg(paste("Patache_Hilltop",vars_Trent[x],".jpeg"))
+      ordisurf(eval(parse(text=paste("coverB_Trent_MDS~",vars_Trent[1],sep=""))), stuff_env_Trent, main= "",labcex=0, col='black')  
+      ordisurf(eval(parse(text=paste("coverB_Trent_MDS~",vars_Trent[x],sep=""))), stuff_env_Trent, main= paste(vars_Trent[x]),labcex=1, add=T)
+      text(max(stuff_Trent$MDS1)*0.5, max(stuff_Trent$MDS2)*0.95, paste("R2=",ordi_stats_out[x,2]), cex=2)
+      #elev<-envfit(eval(parse(text=paste("coverB_Trent_MDS~",vars_Trent[2],sep=""))), stuff_env_Trent, main= paste(vars_Trent[2]))
+      # plot(elev, cex=1.5)
+      #dev.off()
+      
+    }
+    
+    pdf("Patache_Hilltop_Plots_Trent.pdf")
+    lapply(1:length(vars_Trent),ordi_fit)
+    dev.off()
+    
     
 ######### Second matrix ... Daniel recommeded starting looking at microclimate, specifically
 ######### sat85_dry, Tmed, VPDmed ... where are these columns?
