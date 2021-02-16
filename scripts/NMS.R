@@ -2,13 +2,14 @@
 #install.packages('devtools')
 #Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 
-devtools::install_github('phytomosaic/foggy')
-devtools::install_github('phytomosaic/ecole')
+#devtools::install_github('phytomosaic/foggy')
+#devtools::install_github('phytomosaic/ecole')
 
 require(tidyverse)
 require(vegan)
 require(Metrics)
 require(hsdar)
+set.seed(1234)
 ##### Read in data
 ## Read in cover data
 cover<-read.csv('data/CoverMaster.csv')
@@ -87,20 +88,6 @@ substrate<-read.csv('data/Substrate_PatacheB.csv',header=T)
       dplyr::filter(tot_cov>0) %>%
       dplyr::select(-tot_cov,-UID)
     
-  
-      #OLD coverB_flat<-
-      #OLD coverB %>% 
-      #OLD dplyr::filter(Species!="") %>% #nrow()
-      #OLD dplyr::select(-Collection, -Long_Form, -Photos) %>% 
-      #OLD spread(Species, Cover) #%>% str() #'data.frame':	60 obs. of  94 variables:
-      #OLD coverB_flat_forMDS<-dplyr::select(coverB_flat, -Elevation, -Transect, -Quadrat,-V1)
-      #OLD: coverB_flat_forMDS<-sapply(coverB_flat_forMDS, as.numeric) %>% as.data.frame()
-      #OLD coverB_flat_forMDS[is.na(coverB_flat_forMDS)]<-0
-      #OLD coverB_flat_forMDS<-cbind(coverB_flat_forMDS,as.data.frame(rowSums(coverB_flat_forMDS)))
-      #OLDcoverB_flat_forMDS<-as.data.frame(coverB_flat_forMDS) 
-      #OLD coverB_flat_forMDS<-rename(coverB_flat_forMDS, tot_cov =`rowSums(coverB_flat_forMDS)`)
-      #OLD coverB_flat_forMDS<-coverB_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
-  
   #Trebouxia matrix
    coverB_Treb_flat_forMDS<- 
      coverB_Treb %>% #colnames()
@@ -130,13 +117,6 @@ substrate<-read.csv('data/Substrate_PatacheB.csv',header=T)
      mutate(tot_cov=sum(across(c(-UID)))) %>% 
      dplyr::filter(tot_cov>0) %>%
      dplyr::select(UID)
-            
-   #OLD coverB_Treb_flat_forMDS<-sapply(coverB_Treb_flat_forMDS, as.numeric) %>% as.data.frame() ##
-   #OLD  coverB_Treb_flat_forMDS[is.na(coverB_Treb_flat_forMDS)==T]<-0
-   #OLD    coverB_Treb_flat_forMDS<-cbind(coverB_Treb_flat_forMDS,as.data.frame(rowSums(coverB_Treb_flat_forMDS)))
-   #OLD      coverB_Treb_flat_forMDS<-as.data.frame(coverB_Treb_flat_forMDS) 
-   #OLD        coverB_Treb_flat_forMDS<-rename(coverB_Treb_flat_forMDS, tot_cov =`rowSums(coverB_Treb_flat_forMDS)`)
-   #OLD          coverB_Treb_flat_forMDS<-coverB_Treb_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
             
   #Trentepohlia matrix
    coverB_Trent_flat_forMDS<- 
@@ -169,33 +149,6 @@ substrate<-read.csv('data/Substrate_PatacheB.csv',header=T)
      dplyr::filter(tot_cov>0) %>%
      dplyr::select(UID)
    
-   
-   
-   #OLD coverB_Trent_flat<-coverB_Trent %>% #colnames()
-   #OLD #rename(Elevation = Elevation.x, Transect = Transect.x, Quadrat = Quadrat.x, Cover = Cover.x) %>% #View()
-   #OLD dplyr::select(Elevation, Transect, Quadrat, UID, Species, Cover) %>% #head()
-   #OLD  pivot_wider( names_from = Species, values_from = Cover) #%>% View()
-   #OLD    coverB_Trent_flat_forMDS<-dplyr::select(coverB_Trent_flat, -Elevation, -Transect, -Quadrat) #%>% str() #tibble [43 × 26] (S3: tbl_df/tbl/data.frame)
-   #OLD      colnames(coverB_Trent_flat_forMDS)
-   #OLD      #Creates NAs unnecessarily for the UID column
-   #OLD      tst<-coverB_Trent_flat_forMDS$UID %>% 
-   #OLD      cbind(sapply(coverB_Trent_flat_forMDS[,2:25], as.numeric)) #%>% dim()
-   #OLD      #coverB_Trent_flat_forMDS<-tst
-   #OLD        
-   #OLD      #coverB_Trent_flat_forMDS<-sapply(coverB_Trent_flat_forMDS, as.numeric) %>% as.data.frame()
-   #OLD      coverB_Trent_flat_forMDS[is.na(coverB_Trent_flat_forMDS)]<-0
-   #OLD        tst[is.na(tst)]<-0
-   #OLD          tst<-as.data.frame(tst)
-   #OLD            rowSums(tst)
-   #OLD              str(tst)
-   #OLD      rowSums(sapply(coverB_Trent_flat_forMDS[,2:25], as.numeric))
-   #OLD        coverB_Trent_flat_forMDS<-cbind(coverB_Trent_flat_forMDS,as.data.frame(rowSums(coverB_Trent_flat_forMDS)))
-   #OLD          coverB_Trent_flat_forMDS<-as.data.frame(coverB_Trent_flat_forMDS) 
-   #OLD            coverB_Trent_flat_forMDS<-rename(coverB_Trent_flat_forMDS, tot_cov =`rowSums(coverB_Trent_flat_forMDS)`)
-   #OLD              coverB_Trent_flat_forMDS<-coverB_Trent_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)
-                    
-                  
-                  
   #Run NMDS with Bray-Curtis distance measure with more than necessary number of min/max tries to avoid locale optima
   coverB_MDS<-metaMDS(coverB_flat_forMDS, distance = "bray", try=500, trymax = 1000)
     plot(coverB_MDS)  
@@ -267,47 +220,6 @@ substrate<-read.csv('data/Substrate_PatacheB.csv',header=T)
       par(mar = c(3.5,3.5,1,1), mgp = c(2, 0.6, 0), cex = 0.8, las = 2)
       barplot(stress, ylab = "stress")
 
-#OLD ## The NMDS above includes all quadrats, including those which had no lichens.
-#OLD       #QUESTION: Is this still true? I filtero out quadrats with cover<0
-#OLD ## Those empty plots need to be removed by calculating and filtering by total cover > 0
-#OLD   coverB_filt<-subset(cover, Transect=='B') ## 'data.frame':	342 obs. of  8 variables:, 7 factors and 1 integer
-#OLD     coverB_filt$Cover<-as.character(coverB_filt$Cover) ## same dimensions, one var turned to char
-#OLD       ##Replace "T" meaning trace cover values iwth a number
-#OLD         coverB_filt$Cover[coverB_filt$Cover=="T"]<-0.25
-#OLD           ##Remove superfluous columns
-#OLD             coverB_filt <- coverB_filt %>% 
-#OLD               dplyr::select(-Collection, -Long_Form, -Photos) #'data.frame':	342 obs. of  5 variables:, 1 integer, 3 factors and 1 char
-#OLD     ##Spread data so columns are species, values are cover and rows are single quadrats
-#OLD     coverB_filt_flat<-coverB_filt %>% 
-#OLD       spread(Species, Cover) %>% 
-#OLD         dplyr::select(-V1) # 'data.frame':	60 obs. of  92 variables: 1 integer, two factors, 89 chars
-#OLD           ## Replace NAs with 0's and turn it into a dataframe
-#OLD           coverB_filt_flat[is.na(coverB_filt_flat)==T]<-0
-#OLD             ## Make the species cover columns numeric but this makes everything numeric so no need for the row subscript
-#OLD             coverB_filt_flat$Quadrat<-as.character(coverB_filt_flat$Quadrat)
-#OLD               names<-coverB_filt_flat$UID
-#OLD             
-#OLD                coverB_filt_flat<-lapply(coverB_filt_flat[-1:-4],as.numeric) %>% as.data.frame()
-#OLD               
-#OLD                 coverB_filt_flat[is.na(coverB_filt_flat)==T]<-0 # 'data.frame':	60 obs. of  92 variables:, all vars numeric
-#OLD                   ## Create rownames that are UIDs
-#OLD                     rownames(coverB_filt_flat)<-names
-#OLD                 
-#OLD         ## Remove columns that aren't species to conform to input requirements for metaMDS
-#OLD       coverB_filt_flat_forMDS<-coverB_filt_flat
-#OLD         coverB_filt_flat_forMDS[is.na(coverB_filt_flat_forMDS)==T]<-0
-#OLD       #numeric
-#OLD           coverB_filt_flat_forMDS$rowsums<-rowSums(coverB_filt_flat_forMDS)
-#OLD               coverB_filt_flat_forMDS[is.na(coverB_filt_flat_forMDS)==T]<-0
-#OLD                 #coverB_filt_flat_forMDS<-mapply(as.numeric, coverB_filt_flat_forMDS) %>% as.data.frame()
-#OLD                   #coverB_filt_flat_forMDS[is.na(coverB_filt_flat_forMDS)==T]<-0
-#OLD                     coverB_filt_flat_forMDS<-rename(coverB_filt_flat_forMDS, tot_cov =rowsums)
-#OLD                       coverB_filt_flat_forMDS<-coverB_filt_flat_forMDS %>% subset(tot_cov>0) %>% dplyr::select(-tot_cov)#subset(tot_cov>0)# %>% select(-tot_cov)
-#OLD                         names_nmds<-rownames(coverB_filt_flat_forMDS)
-#OLD ## Run NMDS with relative distance (Bray) measure
-#OLD coverB_MDS<-metaMDS(coverB_filt_flat_forMDS, distance = "bray", try=100, trymax = 500)
-#OLD plot(coverB_MDS)
-
 # Make the a column in the NMDS output that is the quadrat UID to be able to join with the env data 
 #Need to filter Env_matrix to only have the 49 rows but now has rownames
 stuff<-coverB_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds)  %>% replace(is.na(.),0)
@@ -361,10 +273,6 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
   stuff_out1_Trent<-ordisurf(coverB_Trent_MDS~Inclination, stuff_env_Trent, main= paste(colnames(stuff_env_Trent[5]))) %>% summary() #%>% select(r.sq)
   stuff_out1_Treb<-ordisurf(coverB_Treb_MDS~Inclination, stuff_env_Treb, main= paste(colnames(stuff_env_Treb[5]))) %>% summary() #%>% select(r.sq)
   
- #stuff_out1$r.sq
-  #dev.off()
-  
-  
 ## automate ordisurf for all columns
 ## Need to unlist the output of each ordisurf ... str(stuff_out) resultsing a list of 54
   ##Unit test for hilstop plot and  grabbing R2 PASSES
@@ -373,13 +281,6 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
   tst_hill_stats$r.sq
   #dev.off()
 
-  #tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[4],sep=""))), stuff_env, )
-  #tst_hill_stats<-summary(tst_hill) 
-  #tst_hill_stats$r.sq
-  #str(tst_hill_stats)
-  #dev.off()
-  
-  
   ##Function to make models ... not sure if it even still get used though
   make_mods<-function (x) {paste("coverB_MDS~",vars[x],sep="") %>% as.formula()}
   var_mods<-lapply(1:length(vars),make_mods)
@@ -388,13 +289,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     tst1<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
     plot(tst1)
     dev.off()
-    #tst2<-elev_hilltop<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]),labcex=0, col='black')
-    #elev_hilltop
-    #ordisurf(eval(parse(text=paste("coverB_MDS~",vars[4],sep=""))), stuff_env, main= paste(vars[4]),labcex=0, add=T)
-    #text(max(stuff$MDS1)*0.9, max(stuff$MDS2)*0.95, paste("R2",ordi_stats_out[2,2])) 
-    #dev.off()
-    #tst2
-    
+ 
 ##Make R2, give them sensible names and write out as CSV
       ordi_stats<-function(x)
       {
@@ -444,7 +339,6 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
         write_csv(ordi_stats_out_Trent, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Trent.csv")
         
               
-              
 #Make hilltop plots with R2 
     ordi_fit<-function(x) 
             {
@@ -462,9 +356,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     lapply(1:length(vars),ordi_fit)
     dev.off()
     
-    
-    
-    ######Hilltop plots for Trebouxioud lichens
+######Hilltop plots for Trebouxioud lichens
     
     ordi_fit_Treb<-function(x) 
     {
@@ -482,10 +374,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     lapply(1:length(vars_Treb),ordi_fit_Treb)
     dev.off()
     
-    
-    
-    
-    ######Hilltop plots for Trentepohlioid lichens
+######Hilltop plots for Trentepohlioid lichens
     
     ordi_fit_Trent<-function(x) 
     {
@@ -503,11 +392,3 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     lapply(1:length(vars_Trent),ordi_fit_Trent)
     dev.off()
     
-    
-######### Second matrix ... Daniel recommeded starting looking at microclimate, specifically
-######### sat85_dry, Tmed, VPDmed ... where are these columns?
-## Find files with data from same quadrats/elevations on transect B
-## anat, he, he_red, quad, rou, rouVar all are filterable by transect
-## angles, dry only has data for transect B
-## unclear which transect rock and rock_st came from
-    stuff_env[,-1:-4] %>% cor(use="pairwise.complete.obs") %>% cov2cor() %>% view()
