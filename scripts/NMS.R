@@ -304,10 +304,22 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
           ordi_stats_out<-cbind(vars,ordi_stats_out) %>% as.data.frame()
             colnames(ordi_stats_out)<-c("Env Variable","R squared")
               ##Now write.csv doesn't work!?
-              write_csv(ordi_stats_out, "Patached_TransectB_CommunityEnv_NMS_GAM_fit.csv")
+              #write_csv(ordi_stats_out, "Patached_TransectB_CommunityEnv_NMS_GAM_fit.csv")
    
        ##Stats for Treb 
-        ordi_stats_Treb<-function(x)
+              ##Unit test for hilstop plot and  grabbing R2 
+              ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[1],sep=""))), stuff_env_Treb)  
+              ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars_Treb[8],sep=""))), stuff_env_Treb)
+              tst_hill<-ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars[8],sep=""))), stuff_env_Treb)
+              tst_hill_stats<-summary(tst_hill) 
+              tst_hill_stats$r.sq
+              dev.off()
+              
+              
+              tst<-lm(stuff_env_Treb$Dry3kPa_Dry~stuff_Treb$MDS2+stuff_Treb$MDS1)
+              summary(tst)
+              
+       ordi_stats_Treb<-function(x)
         {
           #out1<-ordisurf(eval(parse(text=paste(MDS, "~",vars[x],sep=""))), stuff_env) %>% summary()
           out1<-ordisurf(eval(parse(text=paste("coverB_Treb_MDS~",vars[x],sep=""))), stuff_env_Treb) %>% summary()
@@ -320,7 +332,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
         ordi_stats_out_Treb<-cbind(vars,ordi_stats_out_Treb) %>% as.data.frame()
         colnames(ordi_stats_out_Treb)<-c("Env Variable","R squared")
         ##Now write.csv doesn't work!?
-        write_csv(ordi_stats_out_Treb, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Treb.csv")
+        #write_csv(ordi_stats_out_Treb, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Treb.csv")
        
         ##Stats for Trent 
         ordi_stats_Trent<-function(x)
@@ -336,7 +348,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
         ordi_stats_out_Trent<-cbind(vars,ordi_stats_out_Trent) %>% as.data.frame()
         colnames(ordi_stats_out_Trent)<-c("Env Variable","R squared")
         ##Now write.csv doesn't work!?
-        write_csv(ordi_stats_out_Trent, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Trent.csv")
+        #write_csv(ordi_stats_out_Trent, "Patached_TransectB_CommunityEnv_NMS_GAM_fit_Trent.csv")
         
               
 #Make hilltop plots with R2 
@@ -391,4 +403,18 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     pdf("Patache_Hilltop_Plots_Trent.pdf")
     lapply(1:length(vars_Trent),ordi_fit_Trent)
     dev.off()
+    
+###############Combine stats from full, Trent and Treb ordinations 
+reject = c("MDS1","MD2", ".C", "d13C", ".N") %>% as.data.frame()
+colnames(reject) <- "Env Variable"
+ordi_stats_out %>% 
+      rename(All_R2 = 'R squared') %>%
+        inner_join(ordi_stats_out_Treb, by="Env Variable") %>% 
+          rename(Treb_R2 = 'R squared') %>%
+            inner_join(ordi_stats_out_Trent, by="Env Variable") %>%
+              rename(Trent_R2 = 'R squared') %>%
+                anti_join(reject, by="Env Variable") %>%
+                  arrange(desc(All_R2), desc(Treb_R2), desc(Trent_R2)) %>%
+                    dplyr::filter(All_R2 > 0.3) %>%
+                     write_csv("Patache_TransectB_CommunityEnv_NMS_GAM.csv")
     
