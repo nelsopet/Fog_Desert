@@ -9,6 +9,7 @@ require(tidyverse)
 require(vegan)
 require(Metrics)
 require(hsdar)
+require(mgcv)
 set.seed(1234)
 ##### Read in data
 ## Read in cover data
@@ -19,12 +20,12 @@ cover<-read.csv('data/CoverMaster.csv')
       
 # read in species-level traits, including absorption time and angles
 traits_sp<-read.csv('data/Traits_TransB.csv')
-  View(traits_sp)
-    dim(traits_sp) #[1] 356  26
-      traits_sp %>% 
-        dplyr::select(Species, Photobiont) %>%
-          unique() %>%
-            write.csv("traits_species_photobiont_for_review.csv")
+  #View(traits_sp)
+  #dim(traits_sp) #[1] 356  26
+      #traits_sp %>% 
+      #  dplyr::select(Species, Photobiont) %>%
+      #    unique() %>%
+      #      write.csv("traits_species_photobiont_for_review.csv")
 
 ##Read in the environment data, including climate derivatives
 Env_matrix_B<-read.csv('data/Env_matrix_B.csv')
@@ -37,18 +38,18 @@ Env_matrix_B<-read.csv('data/Env_matrix_B.csv')
 trait<-read.csv('data/QuadratMeanTraits_Unweighted.csv')
   trait$UID<-paste(trait$Elevation, trait$Quadrat, sep="_")
     trait<-trait[,-1:-4]
-      dim(trait) #[1]  49 123 
-        colnames(trait)
+      #dim(trait) #[1]  49 123 
+      #colnames(trait)
       
 #Read in spectra by quadrat, including band ratios
 spectra<-read.csv('data/Spectral_Features.csv')
-  dim(spectra) #[1] 130 115 
+  #dim(spectra) #[1] 130 115 
   
 #Read in substrate data, including quadrat-level rockiness measurements
   #QUESTION: Joint this the traits?
 substrate<-read.csv('data/Substrate_PatacheB.csv',header=T)
   substrate$UID<-paste(substrate$Elevation, substrate$Quadrat, sep="_")
-    dim(substrate) #[1] 60 10 
+    #dim(substrate) #[1] 60 10 
 
 ##### NMS 
 # Build a regular NMDS using only transect B, which has the complete community and environmental data
@@ -227,8 +228,8 @@ stuff_Trent<-coverB_Trent_MDS$points %>% as.data.frame() %>% mutate(UID= names_n
 stuff_Treb<-coverB_Treb_MDS$points %>% as.data.frame() %>% mutate(UID= names_nmds_Treb$UID) %>% replace(is.na(.),0)
   stuff_Treb$UID<-as.character(stuff_Treb$UID)
 ## Join the NMDS data with the 
-  str(Env_matrix_B)
-  str(stuff_Treb)
+  #str(Env_matrix_B)
+  #str(stuff_Treb)
 stuff_env<-Env_matrix_B %>% inner_join(stuff, by="UID")  %>% as.data.frame() # %>% select(VPD_min)
 stuff_env_Trent<-Env_matrix_B %>% inner_join(stuff_Trent, by="UID")  %>% as.data.frame() # %>% select(VPD_min)
 stuff_env_Treb<-Env_matrix_B %>% inner_join(stuff_Treb, by="UID")  %>% as.data.frame() # %>% select(VPD_min)
@@ -275,21 +276,66 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
   
 ## automate ordisurf for all columns
 ## Need to unlist the output of each ordisurf ... str(stuff_out) resultsing a list of 54
-  ##Unit test for hilstop plot and  grabbing R2 PASSES
+  ##UNIT TEST
+  # for hilstop plot and  grabbing R2 PASSES
   tst_hill<-ordisurf(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env)
   tst_hill_stats<-summary(tst_hill) 
   tst_hill_stats$r.sq
   #dev.off()
-
-  ##Function to make models ... not sure if it even still get used though
-  make_mods<-function (x) {paste("coverB_MDS~",vars[x],sep="") %>% as.formula()}
-  var_mods<-lapply(1:length(vars),make_mods)
-    eval(var_mods[1])
-    ##Unit test for making linear biplot vector for elevation PASSSES
-    tst1<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
-    plot(tst1)
-    dev.off()
- 
+  #PASS
+  
+      #INTEGRATION TEST 
+      ##Function to make models ... not sure if it even still get used though
+      make_mods<-function (x) {paste("coverB_MDS~",vars[x],sep="") %>% as.formula()}
+      var_mods<-lapply(1:length(vars),make_mods)
+        eval(var_mods[1])
+        ##Unit test for making linear biplot vector for elevation PASSSES
+        tst1<-envfit(eval(parse(text=paste("coverB_MDS~",vars[2],sep=""))), stuff_env, main= paste(vars[2]))
+        plot(tst1)
+        dev.off()
+      #PASS
+        
+#UNIT TEST
+#Mixed effects advice from Rob Smith
+        #Function `mgcv::gamm` provides mixed-effects GAMs in R, so random effects could be specified.
+        #
+        #But I'm not sure you need this for elevation.  Elevation is a fixed effect, replicates within a given elevation are independent.
+        #
+        #However... replicates within each "transect" are not independent, so you could specify "transect" as the random effect (separate intercepts) in the GAMM.
+        #
+        #So the two models might be:
+        #
+        #mod_fixed   <- gam(Elevation ~ s(NMDS1, NMDS2, k=10, bs='tp', fx=F), data=d,
+        #family='gaussian', select=TRUE, method='REML', gamma=1)
+        #
+        #mod_mixed   <- gamm(Elevation ~ s(NMDS1, NMDS2, k=10, bs='tp', fx=F), data=d,
+        #family='gaussian', select=TRUE, method='REML', gamma=1,
+        #random=list(Transect~1))
+        #
+        #Hope that will help!
+      
+        #UNIT TEST
+        mod_mixed   <- gamm(Aspect ~ s(MDS1, MDS2, k=10, bs='tp', fx=F), 
+                            data=stuff_env, 
+                            family='gaussian', 
+                            select=TRUE, 
+                            method='REML', 
+                            gamma=1, 
+                            random=list(Elevation=~1)) 
+        
+        #Error in gamm(Dry3kPa_Dry ~ s(MDS1, MDS2, k = 10, bs = "tp", fx = F),  : 
+        #random argument must be a *named* list.
+        #PASS but throws error
+        
+      #Try bivariate approach to view variables measured at the elevation level
+        
+        ggplot(stuff_env, aes(Dry3kPa_Dry, MDS1, group=Dry3kPa_Dry))+geom_boxplot()
+        ggplot(stuff_env, aes(Dry3kPa_Dry, MDS2, group=Dry3kPa_Dry))+geom_boxplot()
+        
+        
+        
+        
+        
 ##Make R2, give them sensible names and write out as CSV
       ordi_stats<-function(x)
       {
@@ -369,7 +415,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
     dev.off()
     
 ######Hilltop plots for Trebouxioud lichens
-    
+      
     ordi_fit_Treb<-function(x) 
     {
       ##jpeg(paste("Patache_Hilltop",vars_Treb[x],".jpeg"))
@@ -407,6 +453,7 @@ vars_Trent<-colnames(stuff_env_Trent[5:length(stuff_env_Trent)-1])#  %>% replace
 ###############Combine stats from full, Trent and Treb ordinations 
 reject = c("MDS1","MD2", ".C", "d13C", ".N") %>% as.data.frame()
 colnames(reject) <- "Env Variable"
+all_stats<-
 ordi_stats_out %>% 
       rename(All_R2 = 'R squared') %>%
         inner_join(ordi_stats_out_Treb, by="Env Variable") %>% 
@@ -415,6 +462,27 @@ ordi_stats_out %>%
               rename(Trent_R2 = 'R squared') %>%
                 anti_join(reject, by="Env Variable") %>%
                   arrange(desc(All_R2), desc(Treb_R2), desc(Trent_R2)) %>%
-                    dplyr::filter(All_R2 > 0.3) %>%
-                     write_csv("Patache_TransectB_CommunityEnv_NMS_GAM.csv")
-    
+                    dplyr::filter(All_R2 > 0.3) #%>%
+                     #write_csv("Patache_TransectB_CommunityEnv_NMS_GAM.csv")
+ 
+all_stat_vars<-all_stats$`Env Variable`
+
+pdf("Env_Pairs.pdf", width=30, height=30)
+stuff_env %>% 
+  dplyr::select(all_stat_vars, -MDS2) %>%
+  pairs()
+dev.off()
+
+pdf("Treb_Env_Pairs.pdf", width=30, height=30)
+stuff_env_Treb %>% 
+  dplyr::select(all_stat_vars, -MDS2) %>%
+  pairs()
+dev.off()
+
+pdf("Trent_Env_Pairs.pdf", width=30, height=30)
+stuff_env_Trent %>% 
+  dplyr::select(all_stat_vars, -MDS2) %>%
+  pairs()
+dev.off()
+
+
