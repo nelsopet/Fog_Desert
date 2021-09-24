@@ -13,6 +13,7 @@ set.seed(1234)
 require(tidyverse)
 require(vegan)
 require(mgcv)
+devtools::install_github("https://github.com/phytomosaic/ecole")
 
 
 ### define functions
@@ -253,9 +254,9 @@ plot_nms(scr_env_Trent)
   o  <- ordisurf(scores(d[,c('MDS1','MDS2')]), d[,y], plot=F)
   r2 <- round(summary(o)$r.sq,3)
   if(isTRUE(saveplot)) { png(paste0('./fig/fig_surface_',y,'.png'), 
-                             hei=6, wid=6, unit='in', res=300) }
+                             hei=10, wid=10, unit='in', res=350) }
   plot(d$MDS1, d$MDS2, xlab='NMS 1', ylab='NMS 2',
-       pch=21, cex=1.0, col='#00000099', bg=ecole::colvec(d$Elevation), 
+       pch=21, cex=1.0, col='#00000099' , #bg=ecole::colvec(d$Elevation), 
        bty='L', las=1, asp=1, main=paste0(y,', R2=',r2), ...)
   contour(o$grid$x, o$grid$y, o$grid$z, col='#000000FF', add=T)
   if(isTRUE(saveplot)) dev.off()
@@ -269,14 +270,23 @@ vars <- vars[c(1,2,3,4, 5,7,8,9, 28,29,30,37, 51,141,151,153)]
 
 
 ### fit the GAMs
+png("output/Patache_Hilltops.png", height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
 m_all   <- lapply(vars, function(i) fit_gam(i, d=scr_env))
 names(m_all)   <- vars
+dev.off()
+
+png("output/Patache_Hilltops_Treb.png", height = 5000, width = 5000, res = 350)
+par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
 m_treb  <- lapply(vars, function(i) fit_gam(i, d=scr_env_Treb))
 names(m_treb)  <- vars
+dev.off()
+
+png("output/Patache_Hilltops_Trent.png", height = 5000, width = 5000, res = 350)
+par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
 m_trent <- lapply(vars, function(i) fit_gam(i, d=scr_env_Trent))
 names(m_trent) <- vars
-
+dev.off()
 
 ### GAM goodness-of-fit
 `get_r2` <- function(mod_lst, savecsv=FALSE, prefix='all') {
