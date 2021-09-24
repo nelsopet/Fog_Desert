@@ -302,6 +302,8 @@ r2_treb  <- get_r2(m_treb)
 r2_trent <- get_r2(m_trent)
 (r2 <- data.frame(r2_all, r2_treb, r2_trent))
 ### view R2 across photobiont types
+png("output/Patache_Hilltop_R2.png")
+
 `plot_r2_matrix` <- function(r2, ...) {
   m <- round(as.matrix(r2),2)
   m <- m[NROW(m):1,]
@@ -313,5 +315,5 @@ r2_trent <- get_r2(m_trent)
 }
 plot_r2_matrix(r2)
 
-
+dev.off()
 ####    END    ####
