@@ -13,7 +13,7 @@ set.seed(1234)
 require(tidyverse)
 require(vegan)
 require(mgcv)
-devtools::install_github("https://github.com/phytomosaic/ecole")
+# devtools::install_github('https://github.com/phytomosaic/ecole')
 
 
 ### define functions
@@ -34,6 +34,47 @@ devtools::install_github("https://github.com/phytomosaic/ecole")
   lines(1:k, stress)
   abline(0.20, 0, col='red', lty = 2)
   data.matrix(stress)
+}
+# function to color points by value (elevation value)
+`colvec` <- function (x, n = 99, pal, zeroctr = FALSE, ...) {
+  if (isTRUE(zeroctr)) {
+    if (missing(pal)) {
+      pal <- c('#0000FF', '#0505FF', '#0A0AFF', '#0F0FFF', 
+               '#1414FF', '#1A1AFF', '#1F1FFF', '#2424FF', '#2929FF', 
+               '#2E2EFF', '#3434FF', '#3939FF', '#3E3EFF', '#4343FF', 
+               '#4848FF', '#4E4EFF', '#5353FF', '#5858FF', '#5D5DFF', 
+               '#6262FF', '#6868FF', '#6D6DFF', '#7272FF', '#7777FF', 
+               '#7C7CFF', '#8282FF', '#8787FF', '#8C8CFF', '#9191FF', 
+               '#9696FF', '#9C9CFF', '#A1A1FF', '#A6A6FF', '#ABABFF', 
+               '#B0B0FF', '#B6B6FF', '#BBBBFF', '#C0C0FF', '#C5C5FF', 
+               '#CACAFF', '#D0D0FF', '#D5D5FF', '#DADAFF', '#DFDFFF', 
+               '#E4E4FF', '#EAEAFF', '#EFEFFF', '#F4F4FF', '#F9F9FF', 
+               '#FEFEFF', '#FFF9F9', '#FFF4F4', '#FFEFEF', '#FFEAEA', 
+               '#FFE4E4', '#FFDFDF', '#FFDADA', '#FFD5D5', '#FFD0D0', 
+               '#FFCACA', '#FFC5C5', '#FFC0C0', '#FFBBBB', '#FFB6B6', 
+               '#FFB0B0', '#FFABAB', '#FFA6A6', '#FFA1A1', '#FF9C9C', 
+               '#FF9696', '#FF9191', '#FF8C8C', '#FF8787', '#FF8282', 
+               '#FF7C7C', '#FF7777', '#FF7272', '#FF6D6D', '#FF6868', 
+               '#FF6262', '#FF5D5D', '#FF5858', '#FF5353', '#FF4E4E', 
+               '#FF4848', '#FF4343', '#FF3E3E', '#FF3939', '#FF3434', 
+               '#FF2E2E', '#FF2929', '#FF2424', '#FF1F1F', '#FF1A1A', 
+               '#FF1414', '#FF0F0F', '#FF0A0A', '#FF0505', '#FF0000')
+    }
+    lim  <- max(abs(range(x, na.rm = TRUE)))
+    brk  <- seq(-lim, lim, length.out = 99)
+    cutx <- cut(as.numeric(x), breaks = brk, include.lowest = TRUE)
+    u    <- pal[cutx]
+  }
+  else {
+    if (missing(pal)) {
+      if (is.factor(x)) 
+        n <- nlevels(x)
+      pal <- viridis::inferno(n = n, alpha = 0.9, begin = 0.1, end = 0.85)
+    }
+    cutx <- cut(as.numeric(x), breaks = length(pal), include.lowest = TRUE)
+    u    <- pal[cutx]
+  }
+  return(u)
 }
 
 
@@ -160,6 +201,14 @@ coverB_Trent_flat_forMDS  <- wisconsin(coverB_Trent_flat_forMDS)
 # table(colSums(coverB_Trent_flat_forMDS > 0)) # 13 of 25 taxa are singletons
 
 
+# ### examine species abundance matrices
+# cbind(
+#   ecole::mx_diversity(coverB_flat_forMDS),
+#   ecole::mx_diversity(coverB_Treb_flat_forMDS),
+#   ecole::mx_diversity(coverB_Trent_flat_forMDS)
+# )
+
+
 ### dissimilarity matrices
 noshare(coverB_flat_forMDS)       # 0.346 no-share, advise stepacross
 noshare(coverB_Treb_flat_forMDS)  # 0.480 no-share, advise stepacross
@@ -256,7 +305,7 @@ plot_nms(scr_env_Trent)
   if(isTRUE(saveplot)) { png(paste0('./fig/fig_surface_',y,'.png'), 
                              hei=10, wid=10, unit='in', res=350) }
   plot(d$MDS1, d$MDS2, xlab='NMS 1', ylab='NMS 2',
-       pch=21, cex=1.0, col='#00000099' , #bg=ecole::colvec(d$Elevation), 
+       pch=21, cex=1.0, col='#00000099' , bg=colvec(d$Elevation), 
        bty='L', las=1, asp=1, main=paste0(y,', R2=',r2), ...)
   contour(o$grid$x, o$grid$y, o$grid$z, col='#000000FF', add=T)
   if(isTRUE(saveplot)) dev.off()
@@ -270,19 +319,19 @@ vars <- vars[c(1,2,3,4, 5,7,8,9, 28,29,30,37, 51,141,151,153)]
 
 
 ### fit the GAMs
-png("output/Patache_Hilltops.png", height = 5000, width = 5000, res = 350)
+png('output/Patache_Hilltops.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
 m_all   <- lapply(vars, function(i) fit_gam(i, d=scr_env))
 names(m_all)   <- vars
 dev.off()
 
-png("output/Patache_Hilltops_Treb.png", height = 5000, width = 5000, res = 350)
+png('output/Patache_Hilltops_Treb.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
 m_treb  <- lapply(vars, function(i) fit_gam(i, d=scr_env_Treb))
 names(m_treb)  <- vars
 dev.off()
 
-png("output/Patache_Hilltops_Trent.png", height = 5000, width = 5000, res = 350)
+png('output/Patache_Hilltops_Trent.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
 m_trent <- lapply(vars, function(i) fit_gam(i, d=scr_env_Trent))
 names(m_trent) <- vars
@@ -301,9 +350,9 @@ r2_all   <- get_r2(m_all)
 r2_treb  <- get_r2(m_treb)
 r2_trent <- get_r2(m_trent)
 (r2 <- data.frame(r2_all, r2_treb, r2_trent))
-### view R2 across photobiont types
-png("output/Patache_Hilltop_R2.png")
 
+### view R2 across photobiont types
+png('output/Patache_Hilltop_R2.png')
 `plot_r2_matrix` <- function(r2, ...) {
   m <- round(as.matrix(r2),2)
   m <- m[NROW(m):1,]
@@ -314,6 +363,6 @@ png("output/Patache_Hilltop_R2.png")
   for (x in 1:ncol(m)) { for (y in 1:nrow(m)) { text(x,y,m[y,x]) }}
 }
 plot_r2_matrix(r2)
-
 dev.off()
+
 ####    END    ####
