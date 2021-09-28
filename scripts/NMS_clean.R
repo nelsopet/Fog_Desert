@@ -195,11 +195,11 @@ names_nmds_Trent <-
 coverB_flat_forMDS        <- wisconsin(coverB_flat_forMDS)
 coverB_Treb_flat_forMDS   <- wisconsin(coverB_Treb_flat_forMDS)
 coverB_Trent_flat_forMDS  <- wisconsin(coverB_Trent_flat_forMDS)
-# # remove rare species?
+
+# ### remove rare species?
 # table(colSums(coverB_flat_forMDS > 0)) # 38 of 89 taxa are singletons
 # table(colSums(coverB_Treb_flat_forMDS > 0)) # 22 of 60 taxa are singletons
 # table(colSums(coverB_Trent_flat_forMDS > 0)) # 13 of 25 taxa are singletons
-
 
 # ### examine species abundance matrices
 # cbind(
@@ -219,19 +219,19 @@ D_trent <- stepacross(vegdist(coverB_Trent_flat_forMDS, 'bray'))
 
 
 ### NMS runs
-par(mfrow=c(1,3))
-# NMS all
-scree_nms(D_all, k=5, try=100)             # dimensionality selection
+par(mfrow=c(1,2))
+###  NMS all
+# scree_nms(D_all, k=5, try=100)             # dimensionality selection
 coverB_MDS <- metaMDS(D_all, k=2, try=500, trymax=501, auto=F, noshare=F)
 stressplot(coverB_MDS)                     # shepard plot
 plot(coverB_MDS, type='t', cex=0.6)        # NMS plot
-# NMS Trebouxia
-scree_nms(D_treb, k=5, try=100)            # dimensionality selection
+###  NMS Trebouxia
+# scree_nms(D_treb, k=5, try=100)            # dimensionality selection
 coverB_Treb_MDS <- metaMDS(D_treb, k=2, try=500, trymax=501, auto=F, noshare=F)
 stressplot(coverB_Treb_MDS)                # shepard plot
 plot(coverB_Treb_MDS, type='t', cex=0.6)   # NMS plot
-# NMS Trentepohlia
-scree_nms(D_trent, k=5, try=100)           # dimensionality selection
+###  NMS Trentepohlia
+# scree_nms(D_trent, k=5, try=100)           # dimensionality selection
 coverB_Trent_MDS <- metaMDS(D_trent, k=2, try=500, trymax=501, auto=F, noshare=F)
 stressplot(coverB_Trent_MDS)               # shepard plot
 plot(coverB_Trent_MDS, type='t', cex=0.6)  # CAUTION! many ties, and wonky Axis 1...
@@ -284,21 +284,21 @@ cbind(xtabs(~ Elevation + Quadrat, scr_env_Treb), Total=table(scr_env_Treb$Eleva
 cbind(xtabs(~ Elevation + Quadrat, scr_env_Trent), Total=table(scr_env_Trent$Elevation))
 
 
-### plot NMS by elevation
-`plot_nms` <- function(d, ...) {
-  plot(d$MDS1, d$MDS2, xlab='NMS 1', ylab='NMS 2',
-       pch=as.numeric(factor(d$Elevation))+14, 
-       col=as.numeric(factor(d$Elevation)), 
-       bty='L', las=1, asp=1, main='', ...)
-}
-par(mfrow=c(1,3), pty='s')
-plot_nms(scr_env)
-plot_nms(scr_env_Treb)
-plot_nms(scr_env_Trent)
-# cant do mixed model because Elevations occupy diff regions of ordination space
+# ### quick view: plot NMS by elevation
+# `plot_nms` <- function(d, ...) {
+#   plot(d$MDS1, d$MDS2, xlab='NMS 1', ylab='NMS 2',
+#        pch=as.numeric(factor(d$Elevation))+14, 
+#        col=as.numeric(factor(d$Elevation)), 
+#        bty='L', las=1, asp=1, main='', ...)
+# }
+# par(mfrow=c(1,3), pty='s')
+# plot_nms(scr_env)
+# plot_nms(scr_env_Treb)
+# plot_nms(scr_env_Trent)
+# # cant do mixed model because Elevations occupy diff regions of ordination space
 
 
-### fit GAM models (aka hilltop plots...)
+### function to fit GAM models (not a true hilltop plot)
 `fit_gam` <- function(y, d, saveplot=FALSE, ...) {
   o  <- ordisurf(scores(d[,c('MDS1','MDS2')]), d[,y], plot=F)
   r2 <- round(summary(o)$r.sq,3)
@@ -311,6 +311,21 @@ plot_nms(scr_env_Trent)
   if(isTRUE(saveplot)) dev.off()
   return(o)
 }
+### add hilltop: above `hillcut` percent of total hill height
+`add_hilltop` <- function(y, d, hillcut=0.10, hillcol='#44015480', ...) {
+  o  <- ordisurf(scores(d[,c('MDS1','MDS2')]), d[,y], npoints=299, plot=F)
+  grd   <- o$grid$z
+  rng   <- range(grd, na.rm=T)
+  cutpt <- rng[2] - diff(rng) * hillcut
+  image(o$grid$x, o$grid$y, grd >= cutpt, add=T, col=c(NA,hillcol))
+}
+### test hilltops here:
+par(mfrow=c(1,1), pty='s')
+fit_gam('Dry3kPa_Dry', scr_env)
+add_hilltop('Dry3kPa_Dry', scr_env, hillcut=0.10)
+add_hilltop('Dry1kPa_Dry', scr_env, hillcut=0.10, hillcol='#21908C80')
+add_hilltop('Dry0.7kPa_Dry', scr_env, hillcut=0.10, hillcol='#FDE72580')
+
 
 
 ### for testing only: reduce number of candidate responses
