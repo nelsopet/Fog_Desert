@@ -330,26 +330,27 @@ add_hilltop('Dry0.7kPa_Dry', scr_env, hillcut=0.10, hillcol='#FDE72580')
 
 ### for testing only: reduce number of candidate responses
 length(vars) # 155 candidate responses (!)
-vars <- vars[c(1,2,3,4, 5,7,8,9, 28,29,30,37, 51,141,151,153)]
+#vars_hills <- vars[c(1,2,3,4, 5,7,8,9, 28,29,30,37, 51,141,151,153)] #Rob's test list
+vars_hills <- vars [ c(1,2,3,4,6,8,10,12,14,16,23,25,28,29,51,149,153,154)] #Daniel's list
 
 
 ### fit the GAMs
 png('output/Patache_Hilltops.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
-m_all   <- lapply(vars, function(i) fit_gam(i, d=scr_env))
-names(m_all)   <- vars
+m_all   <- lapply(vars_hills, function(i) fit_gam(i, d=scr_env))
+names(m_all)   <- vars_hills
 dev.off()
 
 png('output/Patache_Hilltops_Treb.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
-m_treb  <- lapply(vars, function(i) fit_gam(i, d=scr_env_Treb))
-names(m_treb)  <- vars
+m_treb  <- lapply(vars_hills, function(i) fit_gam(i, d=scr_env_Treb))
+names(m_treb)  <- vars_hills
 dev.off()
 
 png('output/Patache_Hilltops_Trent.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
-m_trent <- lapply(vars, function(i) fit_gam(i, d=scr_env_Trent))
-names(m_trent) <- vars
+m_trent <- lapply(vars_hills, function(i) fit_gam(i, d=scr_env_Trent))
+names(m_trent) <- vars_hills
 dev.off()
 
 ### GAM goodness-of-fit
