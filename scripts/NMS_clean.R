@@ -330,6 +330,7 @@ add_hilltop('Dry0.7kPa_Dry', scr_env, hillcut=0.10, hillcol='#FDE72580')
 
 ### for testing only: reduce number of candidate responses
 length(vars) # 155 candidate responses (!)
+write_csv(as.data.frame(vars),"./Output/full_variable_list.csv")
 #vars_hills <- vars[c(1,2,3,4, 5,7,8,9, 28,29,30,37, 51,141,151,153)] #Rob's test list
 #vars_hills <- vars [ c(1,2,3,4,6,8,10,12,14,16,23,25,28,29,51,149,153,154)] #Daniel's list
 vars_hills <- vars [ c(1,4,6,7,8,9,10,12,13,14,15,16,23,25,28,153)] #Daniel's revised list
