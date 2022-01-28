@@ -333,25 +333,29 @@ length(vars) # 155 candidate responses (!)
 write_csv(as.data.frame(vars),"./Output/full_variable_list.csv")
 #vars_hills <- vars[c(1,2,3,4, 5,7,8,9, 28,29,30,37, 51,141,151,153)] #Rob's test list
 #vars_hills <- vars [ c(1,2,3,4,6,8,10,12,14,16,23,25,28,29,51,149,153,154)] #Daniel's list
-vars_hills <- vars [ c(1,4,6,7,8,9,10,12,13,14,15,16,23,25,28,153)] #Daniel's revised list
+#vars_hills <- vars [ c(1,4,6,7,8,9,10,12,13,14,15,16,23,25,28,153)] #Daniel's revised list
+vars_hills_all_species<-vars [c(1,7,4)] #Daniel's final revised list prior to submission
+vars_hills_all_Trent<-vars [c(1,7,12)] #Daniel's final revised list prior to submission
+vars_hills_all_Treb<-vars [c(1,8,4)] #Daniel's final revised list prior to submission
+
 
 ### fit the GAMs
 png('output/Patache_Hilltops.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
-m_all   <- lapply(vars_hills, function(i) fit_gam(i, d=scr_env))
-names(m_all)   <- vars_hills
+m_all   <- lapply(vars_hills_all_species, function(i) fit_gam(i, d=scr_env))
+names(m_all)   <- vars_hills_all_species
 dev.off()
 
 png('output/Patache_Hilltops_Treb.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
-m_treb  <- lapply(vars_hills, function(i) fit_gam(i, d=scr_env_Treb))
-names(m_treb)  <- vars_hills
+m_treb  <- lapply(vars_hills_all_Treb, function(i) fit_gam(i, d=scr_env_Treb))
+names(m_treb)  <- vars_hills_all_Treb
 dev.off()
 
 png('output/Patache_Hilltops_Trent.png', height = 5000, width = 5000, res = 350)
 par(mfrow=c(4,4), mar=c(3,3,1,0), oma=c(0,0,0,0), pty='s')
-m_trent <- lapply(vars_hills, function(i) fit_gam(i, d=scr_env_Trent))
-names(m_trent) <- vars_hills
+m_trent <- lapply(vars_hills_all_Trent, function(i) fit_gam(i, d=scr_env_Trent))
+names(m_trent) <- vars_hills_all_Trent
 dev.off()
 
 ### GAM goodness-of-fit
