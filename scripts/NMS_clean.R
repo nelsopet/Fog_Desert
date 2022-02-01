@@ -335,8 +335,8 @@ write_csv(as.data.frame(vars),"./Output/full_variable_list.csv")
 #vars_hills <- vars [ c(1,2,3,4,6,8,10,12,14,16,23,25,28,29,51,149,153,154)] #Daniel's list
 #vars_hills <- vars [ c(1,4,6,7,8,9,10,12,13,14,15,16,23,25,28,153)] #Daniel's revised list
 vars_hills_all_species<-vars [c(1,7,4)] #Daniel's final revised list prior to submission
-vars_hills_all_Trent<-vars [c(1,7,12)] #Daniel's final revised list prior to submission
-vars_hills_all_Treb<-vars [c(1,8,4)] #Daniel's final revised list prior to submission
+vars_hills_all_Trenb<-vars [c(1,7,12)] #Daniel's final revised list prior to submission
+vars_hills_all_Trent<-vars [c(1,8,4)] #Daniel's final revised list prior to submission
 
 
 ### fit the GAMs
