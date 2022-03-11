@@ -333,7 +333,7 @@ length(vars) # 155 candidate responses (!)
 write_csv(as.data.frame(vars),"./Output/full_variable_list.csv")
 #vars_hills <- vars[c(1,2,3,4, 5,7,8,9, 28,29,30,37, 51,141,151,153)] #Rob's test list
 #vars_hills <- vars [ c(1,2,3,4,6,8,10,12,14,16,23,25,28,29,51,149,153,154)] #Daniel's list
-#vars_hills <- vars [ c(1,4,6,7,8,9,10,12,13,14,15,16,23,25,28,153)] #Daniel's revised list
+vars_hills <- vars [ c(1,4,6,7,8,9,10,12,13,14,15,16,23,25,28,153)] #Daniel's revised list
 vars_hills_all_species<-vars [c(1,7,4)] #Daniel's final revised list prior to submission
 vars_hills_all_Treb<-vars [c(1,7,12)] #Daniel's final revised list prior to submission
 vars_hills_all_Trent<-vars [c(1,8,4)] #Daniel's final revised list prior to submission
@@ -367,13 +367,21 @@ dev.off()
   }
   return(r2)
 }
-r2_all   <- get_r2(m_all)
-r2_treb  <- get_r2(m_treb)
-r2_trent <- get_r2(m_trent)
+m_all_r2<-lapply(vars_hills, function(i) fit_gam(i, d=scr_env))
+m_treb_r2<-lapply(vars_hills, function(i) fit_gam(i, d=scr_env_Treb))
+m_trent_r2<-lapply(vars_hills, function(i) fit_gam(i, d=scr_env_Trent))
+
+names(m_all_r2)<-vars_hills
+names(m_treb_r2)<-vars_hills
+names(m_trent_r2)<-vars_hills
+
+r2_all   <- get_r2(m_all_r2)
+r2_treb  <- get_r2(m_treb_r2)
+r2_trent <- get_r2(m_trent_r2)
 (r2 <- data.frame(r2_all, r2_treb, r2_trent))
 
 ### view R2 across photobiont types
-png('output/Patache_Hilltop_R2.png')
+png('output/Patache_Hilltop_R2.png', width =500, height =400)
 `plot_r2_matrix` <- function(r2, ...) {
   m <- round(as.matrix(r2),2)
   m <- m[NROW(m):1,]
