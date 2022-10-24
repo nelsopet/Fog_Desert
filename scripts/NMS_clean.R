@@ -380,8 +380,27 @@ r2_treb  <- get_r2(m_treb_r2)
 r2_trent <- get_r2(m_trent_r2)
 (r2 <- data.frame(r2_all, r2_treb, r2_trent))
 
+r2_long_names<-c("Elevation",
+"Roughness (s.d.)",
+"Dry season < 0.1kPa", 
+"Dry season > 1kPa",
+"Dry season > 3kPa",
+"Dry season < 0.3kPa", 
+"Dry season < 0.7kPa", 
+"Fog season < 0.1kPa", 
+"Fog season > 1kPa",
+"Fog season > 3kPa",
+"Fog season < 0.3kPa", 
+"Fog season < 0.7kPa", 
+"Median T", 
+"Median VPD", 
+"Droplet absorption time", 
+"% Large rock cover")
+
+rownames(r2)<-r2_long_names
+
 ### view R2 across photobiont types
-png('output/Patache_Hilltop_R2.png', width =500, height =400)
+png('output/Patache_Hilltop_R2.png', width =700, height =400)
 `plot_r2_matrix` <- function(r2, ...) {
   m <- round(as.matrix(r2),2)
   m <- m[NROW(m):1,]
